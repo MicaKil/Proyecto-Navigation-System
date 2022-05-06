@@ -1,6 +1,6 @@
 from algo1 import *
 import random
-import time
+import pickle
 
 # Para lograr la navegación de los elementos es necesario la creación de la flota
 #y para ello se utilizará el siguiente comando: python sistema_navegacion.py -create <local_path>
@@ -11,7 +11,6 @@ def create(local_path):
   with open(local_path,'r') as f:
     contents = f.readlines()
   print(contents) 
-
 
 
 "FUNCIONES AUXILIARES"
@@ -33,14 +32,14 @@ def create_flotatxt(n):
     #se guardan los nombres y coordenadas en "uso"
 
     #no hay do - while en python y ni ganas de buscar alternativa inteligente
-    num = random.randrange(0,n)
+    num = random.randrange(0,n+1)
     while num in num_flota: #para no tener barcos con el mismo nombre
-      num = random.randrange(0,n)
+      num = random.randrange(0,n+1)
     num_flota.append(num)
 
-    coor = (random.randrange(10),random.randrange(10))
+    coor = (random.randrange(n),random.randrange(n))
     while coor in  coor_flota: #o misma coordena 
-      coor = (random.randrange(10),random.randrange(10))
+      coor = (random.randrange(n),random.randrange(n))
     coor_flota.append(coor)
 
     flota_m.append("(b"+str(num)+","+str(coor[0])+","+str(coor[1])+","+direccion[random.randrange(8)]+")")
@@ -55,4 +54,4 @@ def random_month():
     mes = "0" + mes 
   else:
     mes = str(mes)
-  return mes + "/2022"
+  return "01/"+ mes + "/2022"
