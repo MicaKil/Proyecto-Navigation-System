@@ -1,19 +1,10 @@
+import imp
 from algo1 import *
 import random
 import pickle
-
-"---------------------------------------------------------------------------------"
-"FUNCIONES PICKLE"
-
-#copie y pegué para poder acceder a estas luego en caso de ser necesario
-
-  # with open('flota.txt', 'wb') as f: #lo serializamos
-  #   pickle.dump(flota_m,f)
-
-  # with open('flota.txt', 'rb') as f: #deserializacion
-  #   flota_d = pickle.load(f)
-
-"---------------------------------------------------------------------------------"
+import dictionary_mica as d
+import dictionary_Universal as u
+import mylinkedlist_mica as mll
 
 #se fija que la fecha ingresada (string) tenga el formato correcto dd/mm/yyyy
 def checkDate(date):
@@ -44,9 +35,36 @@ def getDays(month):
     else: #desde agosto
       return 30
     
+"---------------------------------------------------------------------------------"
+def create_table(flota_list):
+  n = len(flota_list) 
+  import sympy
+  l = sympy.nextprime(1.5*n)
+  D = Array(l,mll.LinkedList())
+  for i in range(1,n):
+    t = getInfo(flota_list[i])
+    u.insert(D,t[0],(t[1],t[2],t[3]))
+  # d.printDic(D)
+  return D
 
+def getInfo(string):
+  str_val = ''
+  e = mll.LinkedList()
+  j = 0
+  for i in range(1,len(string)):
+    if string[i] != ',' and string[i] != ')':
+      str_val += string[i]
+    else:
+      if j == 1 or j == 2:
+        str_val = int(str_val)
+      mll.insert(e,str_val,j)
+      j += 1
+      str_val = ''
+  output = (e.head.value,e.head.nextNode.value,e.head.nextNode.nextNode.value,e.head.nextNode.nextNode.nextNode.value)
+  return output
 
 "---------------------------------------------------------------------------------"
+"EXTRAS"
 # las funciones create_flotatxt y random_month no están en pseudo-python porque no va a ser usadas en el programa ppal
 # su unico propósito es generar un txt para testeo 
 def create_flotatxt(n):
@@ -85,4 +103,14 @@ def random_month():
   else:
     mes = str(mes)
   return "01/"+ mes + "/2022"
-  
+
+"---------------------------------------------------------------------------------"
+"FUNCIONES PICKLE"
+
+#copie y pegué para poder acceder a estas luego en caso de ser necesario
+
+  # with open('flota.txt', 'wb') as f: #lo serializamos
+  #   pickle.dump(flota_m,f)
+
+  # with open('flota.txt', 'rb') as f: #deserializacion
+  #   flota_d = pickle.load(f)
