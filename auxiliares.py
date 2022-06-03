@@ -4,7 +4,6 @@ import random
 import pickle
 import dictionary_mica as d
 import dictionary_Universal as u
-import dictionary_StringHashing as s
 import mylinkedlist_mica as mll
 
 #se fija que la fecha ingresada (string) tenga el formato correcto dd/mm/yyyy
