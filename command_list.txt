@@ -4,8 +4,14 @@ Lista para hacer copy-paste de los comandos:
 mica:
 
 main:
-python navigation_system.py -create flota.txt
+
+desde mi desktop
+
 python navigation_system.py -create C:\Users\micae\Desktop\flota.txt
+
+python navigation_system.py -search 2 b43
+python navigation_system.py -search 2 b1
+
 
 edit:
 python navigation_system_edit.py -create C:\Users\micae\Desktop\flota.txt
