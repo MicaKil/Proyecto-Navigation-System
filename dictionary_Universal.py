@@ -1,6 +1,9 @@
+"Implementación de hash-table con función de hash universal y direccionamiento abierto usando linear probing"
+
 from algo1 import *
 import mylinkedlist_mica as mll
-import sympy
+import sympy #para obtener un número primo
+import pickle
 import random
 
 #p lo suficientemente grande como para que las keys sean menores a p
@@ -9,20 +12,24 @@ import random
 # h = ((ak + b) mod p) mod m
 
 c = 100
-L_ab = mll.LinkedList()
-
 "----------------------------------------------------------------"
 
 def insert(D,key,value):
-    p = sympy.nextprime(len(D))
+    m = len(D)
+    p = sympy.nextprime(m)
 
-    if mll.length(L_ab) < c:
+    with open('lista_a_B.txt', 'rb') as f: #deserializacion
+        L = pickle.load(f)
+
+    if mll.length(L) < c:
         a = random.randrange(1,p)
         b = random.randrange(0,p)
-        mll.add(L_ab,(a,b))
+        mll.add(L,(a,b))
+        with open('lista_a_B.txt', 'wb') as f: #lo serializamos
+            pickle.dump(L,f)
     else:
         index = random.randrange(0,c)
-        (a,b) = mll.access(L_ab,index)
+        (a,b) = mll.access(L,index)
 
     if type(key) == str:
         keyval = 0
@@ -31,94 +38,110 @@ def insert(D,key,value):
     else:
         keyval = key
 
-    position = ((a*keyval+b) % p) % len(D)
-
     t = (key,value) #creamos la tupla a agregar
-    if D[position] == None: #Si no hay nada en D[h]
-        D[position] = mll.LinkedList() #Creamos la lista
-        mll.add(D[position],t) #se agrega la tupla a la lista
-    else:
-        mll.add(D[position],t) #agregamos al ppio de la lista a la tupla
 
-    return D
+    i = 0
+    h1 = (a*keyval+b) % p
+    
+    while i < m:
+        h = (h1 + i) % m
+        if D[h] == None: #Si no hay nada en D[h]
+            D[h] = mll.LinkedList() #Creamos la lista
+            mll.add(D[h],t) #se agrega la tupla a la lista
+            return D
+        else:
+            i += 1    
+
+    return None
         
 "----------------------------------------------------------------"
 
 def search(D,key):
-    p = sympy.nextprime(len(D))
+    with open('lista_a_B.txt', 'rb') as f: #deserializacion
+        L = pickle.load(f)
+
+    m = len(D)
+    p = sympy.nextprime(m)
+
+    if type(key) == str:
+        keyval = 0
+        for i in range(len(key)):
+            keyval += ord(key[i])
+    else:
+        keyval = key
 
     result = None
-    current = L_ab.head
+    current = L.head
     while result == None and current != None:
         (a,b) = current.value
-        position = ((a*key+b) % p) % len(D)
-        if D[position] != None:
-            result = SearchTuple(D[position],key)
+        h1 = (a*keyval+b) % p
+        i = 0
+        while i < m:
+            h = (h1 + i) % m
+            if D[h] != None and D[h].head.value[0] == key: 
+                return D[h].head.value[1] 
+            else:
+                i += 1
         current = current.nextNode
+    #O(100*len(D))
     return result
-"----------------------------------------------------------------"
 
+"----------------------------------------------------------------"
+# "No lo testee porque de momento no lo vamos a usar"
 def delete(D,key):
+    with open('lista_a_B.txt', 'rb') as f: #deserializacion
+        L = pickle.load(f)
+
     p = sympy.nextprime(len(D))
+    m = len(D)
+
+    if type(key) == str:
+        keyval = 0
+        for i in range(len(key)):
+            keyval += ord(key[i])
+    else:
+        keyval = key
 
     result = None
-    current = L_ab.head
+    current = L.head
     while result == None and current != None:
         (a,b) = current.value
-        position = ((a*key+b) % p) % len(D)
-        if D[position] != None:
-            result = deleteTuple(D[position],key)
+        h1 = (a*keyval+b) % p
+        i = 0
+        while i < m:
+            h = (h1 + i) % m
+            if D[h] != None and D[h].head.value[0] == key: 
+                val =  D[h].head.value[1]
+                D[h].head = D[h].head.nextNode
+                return val
+            else:
+                i += 1
+
         current = current.nextNode
     return result
 
+"----------------------------------------------------------------"
+def printDic(D):
+    l = len(D)
+    for i in range(l):
+        if D[i] == None and l<10: 
+            print(i,": ",sep="", end="")
+        elif D[i] != None:
+            print(i,": ",sep="", end="")
+            print(D[i].head.value)
+            #printTuple(D[i])
 
 "----------------------------------------------------------------"
+def printTuple(L): #imprime listas con elementos tupla
+    CurrentNode = L.head #Inicializamos CurrentNode.
+    while CurrentNode != None:
+        print("(", end = "")
+        for i in range(len(CurrentNode.value)):
+            if i == len(CurrentNode.value) - 1:
+                print(CurrentNode.value[i], end = "")
+            else:
+                print(CurrentNode.value[i], end = ", ")
+        print(")", end = "")
+        CurrentNode = CurrentNode.nextNode #CurrentNode pasa a ser el siguiente nodo.
 
-def getListNode(L,key):
-    if L.head == None:
-        return None
-    
-    current = L.head
-    while current != None:
-        if current.value[0] == key:
-            return current.value[1]
-        current = current.nextNode
-    return None
-
-
-"----------------------------------------------------------------"
-# busca en una lista con tuplas, devueleve el valor si lo encuentra
-# y none en el caso contrario
-def SearchTuple(L,key):
-    if L.head == None:
-        return None
-    
-    current = L.head
-    while current != None:
-        if current.value[0] == key:
-            return current.value[1]
-        current = current.nextNode
-    return None
-
-"----------------------------------------------------------------"
-#borra en una lista con tuplas, devueleve el valor a borrar si
-#  lo borra y none en el caso contrario
-def deleteTuple(L,key):
-    if L == None:
-        return None
-    
-    #buscamos la key
-    if L.head.value[0] == key: #si la key se encuentra en la cabecera de la lista
-        val =  L.head.value[1]
-        L.head = L.head.nextNode
-        return val
-    #sino buscamos en los nodos siguientes
-    current = L.head
-    while current.nextNode != None: #para guardar el nodo anterior a eliminar
-        if current.nextNode.value[0] == key:
-            val =  current.nextNode.value[1]
-            current.nextNode = current.nextNode.nextNode #desvinculamos al nodo
-            return val
-        current = current.nextNode
-
-    return None
+    print("")

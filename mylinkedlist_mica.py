@@ -35,6 +35,21 @@ def printv(L): #imprime una lista de forma vertical
 
 def printh(L): #imprime una lista de forma horizontal
   if L == None:
+    print("None")
+    return None
+  if L.head == None:
+    print("Lista vacía")
+    return None
+  CurrentNode = L.head #Inicializamos CurrentNode.
+  while CurrentNode != None:
+    CurrentVal = CurrentNode.value
+    CurrentVal = getVal(CurrentVal)
+    print(CurrentVal, end = " ")
+    CurrentNode = CurrentNode.nextNode #CurrentNode pasa a ser el siguiente nodo.
+  print("")
+
+def printh_viejo(L): #imprime una lista de forma horizontal
+  if L == None:
     return None
   if L.head == None:
     return None
@@ -220,9 +235,9 @@ def clear(L):
 
 #------------------------------------------------------------------------------
 def getVal(CurrentVal):
-    while type(CurrentVal) != int and type(CurrentVal) != str and type(CurrentVal) != float and type(CurrentVal) != tuple:
-        CurrentVal = CurrentVal.value
-    return CurrentVal
+  while type(CurrentVal) != int and type(CurrentVal) != str and type(CurrentVal) != float and type(CurrentVal) != tuple:
+    CurrentVal = CurrentVal.value
+  return CurrentVal
 
 #------------------------------------------------------------------------------
 def printTuple(CurrentVal):

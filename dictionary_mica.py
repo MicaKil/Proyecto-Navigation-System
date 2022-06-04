@@ -1,6 +1,6 @@
 from algo1 import *
 import mylinkedlist_mica as mll
-
+import myarray_mica
 # Ejercicio 2 
 # A partir de una definición de diccionario como la siguiente:
 # dictionary = Array(m,0)
@@ -184,7 +184,7 @@ def checkDuplicates(list):
         insert(D,current.value,current.value)
         current = current.nextNode
 
-    return myarray.Length(D) == LenLista #si los largos no coinciden entonces hay duplicados
+    return myarray_mica.Length(D) == LenLista #si los largos no coinciden entonces hay duplicados
 
 # si n es el largo de la lista entonces O(n+n) es decir O(2n) 
 # complejidad O(n) debido al calculo de largo de las estructuras
@@ -242,7 +242,7 @@ def compressString(str_input):
         i += 1
 
     #printDic(D)
-    if myarray.Length(D) == len(str_input): #si tienen el mismo largo los caracteres se encuentran alternados
+    if myarray_mica.Length(D) == len(str_input): #si tienen el mismo largo los caracteres se encuentran alternados
         return str_input
 
     return str_output

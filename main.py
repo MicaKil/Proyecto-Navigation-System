@@ -5,3 +5,6 @@ import auxiliares as aux
 # aux.create_flotatxt(100) #crea un archivo con cien barcos
 
 #create('flota.txt')
+
+# s = (2,-3)
+# print("x: %d y: %d" %(s[0],s[1]))
