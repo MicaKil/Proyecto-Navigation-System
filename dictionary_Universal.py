@@ -18,14 +18,14 @@ def insert(D,key,value):
     m = len(D)
     p = sympy.nextprime(m)
 
-    with open('lista_a_B.txt', 'rb') as f: #deserializacion
+    with open('lista_ab.txt', 'rb') as f: #deserializacion
         L = pickle.load(f)
 
     if mll.length(L) < c:
         a = random.randrange(1,p)
         b = random.randrange(0,p)
         mll.add(L,(a,b))
-        with open('lista_a_B.txt', 'wb') as f: #lo serializamos
+        with open('lista_ab.txt', 'wb') as f: #lo serializamos
             pickle.dump(L,f)
     else:
         index = random.randrange(0,c)
@@ -57,7 +57,7 @@ def insert(D,key,value):
 "----------------------------------------------------------------"
 
 def search(D,key):
-    with open('lista_a_B.txt', 'rb') as f: #deserializacion
+    with open('lista_ab.txt', 'rb') as f: #deserializacion
         L = pickle.load(f)
 
     m = len(D)
@@ -89,7 +89,7 @@ def search(D,key):
 "----------------------------------------------------------------"
 # "No lo testee porque de momento no lo vamos a usar"
 def delete(D,key):
-    with open('lista_a_B.txt', 'rb') as f: #deserializacion
+    with open('lista_ab.txt', 'rb') as f: #deserializacion
         L = pickle.load(f)
 
     p = sympy.nextprime(len(D))

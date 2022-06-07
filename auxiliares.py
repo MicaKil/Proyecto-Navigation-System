@@ -5,6 +5,7 @@ import sympy #para buscar un número primo
 import dictionary_Universal as u
 import mylinkedlist_mica as mll
 import pickle
+import math
 
 "Verificación de fecha"
 "---------------------------------------------------------------------------------"
@@ -46,10 +47,10 @@ def create_table(flota):
   D = Array(l,mll.LinkedList())
 
   L_ab = mll.LinkedList() #para guardar los (a,b) usados en universal hashing
-  with open('lista_a_B.txt', 'wb') as f: #lo serializamos
+  with open('lista_ab.txt', 'wb') as f: #lo serializamos
     pickle.dump(L_ab,f)
 
-  u.insert(D,'fecha',flota[0]) #se resevar la primer ubicación para la fecha
+  u.insert(D,'fecha',flota[0]) #se resevar la key "fecha" para la fecha
   for i in range(1,n):
     t = getInfo(flota[i])
     if t[3] != "N" and t[3] != "S" and t[3] != "E" and t[3] != "W" and t[3] != "NE" and t[3] != "NW" and t[3] != "SE" and t[3] != "SW":
@@ -81,10 +82,12 @@ def getInfo(string):
 "---------------------------------------------------------------------------------"
 #value es una tupla (posicion inicial x, posicion inicial y, dirección)
 def getPos(date,value): 
+  if date == 1:
+    return (value[0],value[1])
+
   x = value[0]
   y = value[1]
   direc = value[2]
-  print(direc)
   if direc[0] == 'N':
     y = y + date - 1
   elif direc[0] == 'S':
@@ -101,6 +104,28 @@ def getPos(date,value):
       x = x + date - 1
   
   return (x,y)
+
+"Colision"
+"---------------------------------------------------------------------------------"
+def getDistance(b1,b2,date):
+  with open('tabla_flota.txt', 'rb') as f: #deserializacion
+    flota = pickle.load(f)
+
+  #buscamos a los barcos b1 y b2 en la tabla
+  b1_info = u.search(flota,b1)
+  if b1_info == None:
+    print("Error. No se encontró b1.")
+    return None
+  b2_info = u.search(flota,b2)
+  if b2_info == None:
+    print("Error. No se encontró b2.")
+    return None
+
+  b1_pos = getPos(date,b1_info)
+  b2_pos = getPos(date,b2_info)
+  dist = math.sqrt(((b1_pos[0] - b2_pos[0])**2)+((b1_pos[1] - b2_pos[1])**2))
+  return dist
+
 
 "EXTRAS"
 "---------------------------------------------------------------------------------"
@@ -123,9 +148,9 @@ def create_flotatxt(n):
       num = random.randrange(0,n+1)
     num_flota.append(num)
 
-    coor = (random.randrange(n),random.randrange(n))
+    coor = (random.randrange(-n,n),random.randrange(-n,n))
     while coor in  coor_flota: #o misma coordena 
-      coor = (random.randrange(n),random.randrange(n))
+      coor = (random.randrange(-n,n),random.randrange(-n,n))
     coor_flota.append(coor)
 
     flota_m.append("(b"+str(num)+","+str(coor[0])+","+str(coor[1])+","+direccion[random.randrange(8)]+")")
@@ -148,8 +173,8 @@ def random_month():
 
 #copie y pegué para poder acceder a estas luego en caso de ser necesario
 
-# with open('flota.txt', 'wb') as f: #lo serializamos
-#   pickle.dump(flota_m,f)
+# with open('tabla_flota.txt', 'wb') as f: #lo serializamos
+#   pickle.dump(flota,f)
 
-# with open('flota.txt', 'rb') as f: #deserializacion
-#   flota_d = pickle.load(f)
+# with open('tabla_flota.txt', 'rb') as f: #deserializacion
+#   flota = pickle.load(f)
