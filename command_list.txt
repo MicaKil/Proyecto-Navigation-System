@@ -1,22 +1,22 @@
 Lista para hacer copy-paste de los comandos:
 
-----------------------------------------------------------------------
 mica:
 
-main:
-
 desde mi desktop
+----------------------------------------------------------------------
+*create:*
+python navigation_system.py -create C:\Users\micae\Desktop\flota10.txt
 
-python navigation_system.py -create C:\Users\micae\Desktop\flota.txt
-
+*search*
 python navigation_system.py -search 2 b43
 python navigation_system.py -search 2 b1
 
+*closer*
+python navigation_system.py -closer 1
 
-edit:
-python navigation_system_edit.py -create C:\Users\micae\Desktop\flota.txt
 
 comandos  con error:
+----------------------------------------------------------------------
 python navigation_system.py -crea C:\Users\micae\Desktop\flota.txt
 
     
