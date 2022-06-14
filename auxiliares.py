@@ -1,8 +1,7 @@
-from msilib.schema import Error
 from algo1 import *
 import random
 import sympy #para buscar un número primo
-import dictionary_Universal as u
+import dictionary_universal as d
 import mylinkedlist_mica as mll
 import pickle
 import math
@@ -16,12 +15,13 @@ def checkDate(date):
     if mes>0 and mes<13:
       dia = date[0:2]
       year = date[6:10]
-      if dia == '01' and year == '2022':
+      if (dia == '01' or dia == '01')  and year == '2022':
         return True
 
   print("Error: La fecha no comple con el formato especificado.")
   return False #no cumple con el formato
 
+#"---------------------------------------------------------------------------------"
 #devuelve la cantidad de días en un mes
 def getDays(month): 
   if month == "02":
@@ -50,16 +50,19 @@ def create_table(flota):
   with open('lista_ab.txt', 'wb') as f: #lo serializamos
     pickle.dump(L_ab,f)
 
-  u.insert(D,'fecha',flota[0]) #se resevar la key "fecha" para la fecha
+  d.insert(D,'fecha',flota[0]) #se resevar la key "fecha" para la fecha
+  d.insert(D,'boatnumber', n - 1)
+
   for i in range(1,n):
     t = getInfo(flota[i])
     if t[3] != "N" and t[3] != "S" and t[3] != "E" and t[3] != "W" and t[3] != "NE" and t[3] != "NW" and t[3] != "SE" and t[3] != "SW":
       print("Error. No es una dirección posible.")
       return None
-    u.insert(D,t[0],(t[1],t[2],t[3]))
+    d.insert(D,t[0],(t[1],t[2],t[3]))
 
   return D
-  
+
+#"---------------------------------------------------------------------------------"
 #pasa la informacion de un string del txt a una tupla
 def getInfo(string):
   str_val = ''
@@ -75,13 +78,13 @@ def getInfo(string):
       j += 1
       str_val = ''
 
-  output = (e.head.value,e.head.nextNode.value,e.head.nextNode.nextNode.value,e.head.nextNode.nextNode.nextNode.value)
+  output = (e.head.value, e.head.nextNode.value, e.head.nextNode.nextNode.value, e.head.nextNode.nextNode.nextNode.value)
   return output
 
 "Obetener posición"
 "---------------------------------------------------------------------------------"
-#value es una tupla (posicion inicial x, posicion inicial y, dirección)
-def getPos(date,value): 
+
+def getPos(date,value): #value es una tupla (posicion inicial x, posicion inicial y, dirección)
   if date == 1:
     return (value[0],value[1])
 
@@ -105,18 +108,19 @@ def getPos(date,value):
   
   return (x,y)
 
-"Colision"
+"Funciones para calcular la distancia"
 "---------------------------------------------------------------------------------"
+#calcula la distancia entre dos barcos cuya posición desconocemos
 def getDistance(b1,b2,date):
   with open('tabla_flota.txt', 'rb') as f: #deserializacion
     flota = pickle.load(f)
 
   #buscamos a los barcos b1 y b2 en la tabla
-  b1_info = u.search(flota,b1)
+  b1_info = d.search(flota,b1)
   if b1_info == None:
     print("Error. No se encontró b1.")
     return None
-  b2_info = u.search(flota,b2)
+  b2_info = d.search(flota,b2)
   if b2_info == None:
     print("Error. No se encontró b2.")
     return None
@@ -125,6 +129,128 @@ def getDistance(b1,b2,date):
   b2_pos = getPos(date,b2_info)
   dist = math.sqrt(((b1_pos[0] - b2_pos[0])**2)+((b1_pos[1] - b2_pos[1])**2))
   return dist
+
+#"---------------------------------------------------------------------------------"
+# Dado dos puntos (tuplas de coordenadaas) calcula su distancia 
+def calculateDistantance(Point1,Point2):
+  return math.sqrt(((Point1[0] - Point2[0])**2)+((Point1[1] - Point2[1])**2))
+
+#"---------------------------------------------------------------------------------"
+# calcula por fuerza bruta la distancia más corta entre n < 3 barcos 
+# complejidad O(nC2) <= O(n^2)
+def closestPairBF(date, flota, n): 
+  min_dist = 1e9
+  min_boats = mll.LinkedList()
+  for i in range(n):
+    if flota[i] != None and flota[i].head.value[0] != 'fecha' and flota[i].head.value[0] != 'boatnumber':
+      for j in range(i,n):
+        if flota[j] != None and flota[j].head.value[0] != 'fecha' and flota[i].head.value[0] != 'boatnumber':
+          if i != j:
+            b1 = flota[i].head.value
+            b1_pos = getPos(date,b1[1])
+            b2 = flota[j].head.value
+            b2_pos = getPos(date,b2[1])
+            dist = calculateDistantance(b1_pos,b2_pos)
+            if dist == min_dist:
+              mll.add(min_boats, (b1[0],b2[0]))
+              boat_num += 1
+            if dist < min_dist:
+              min_boats = mll.LinkedList() #se crea la lista que almacena el o los barcos
+              min_dist = dist
+              mll.add(min_boats, (b1[0],b2[0]))
+              boat_num = 1 # se vuelve a 1
+  
+  if boat_num > 1:
+    print ("La distancia mínima el día %d es %d entre los barcos:" %(date,min_dist))
+    cur = min_boats.head
+    for i in range(boat_num):
+      print(cur.value)
+      cur = cur.nextNode
+  else:
+    print ("La distancia mínima el día %d es %d entre los barcos %s y %s." %(date,min_dist,min_boats.head.value[0],min_boats.head.value[1]))
+  
+  return min_dist
+
+#"---------------------------------------------------------------------------------"
+def closestPair(date):
+  with open('tabla_flota.txt', 'rb') as f: #deserializacion
+    flota = pickle.load(f)
+
+  fecha = d.search(flota,'fecha')
+  maxdays = getDays(fecha[3:5])
+  date = int(date)
+  if date < 1 and date > maxdays:
+    print("No es una fecha posible.")
+    return None
+
+  boats_num = sympy.nextprime(1.5*4) #tamaño de la tabla con 3 barcos 
+  n = len(flota)
+  if n <= boats_num: #si tenemos 3 barcos (4 es la fecha)
+    return closestPairBF(date, flota, n)
+
+  m = d.search(flota,'boatnumber')
+
+  Px = Array(m, tuple)
+  Py = Array(m, tuple)
+  for i in range(n):
+    if flota[i] != None and flota[i].head.value[0] != 'fecha' and flota[i].head.value[0] != 'boatnumber':
+      Px[i] = flota[i].head.value
+      Py[i] = flota[i].head.value
+      
+#"---------------------------------------------------------------------------------"
+#Merge Sort Modificado para ordenar barcos según coordenada x o y 
+
+def mergesortMOD(L):
+  l = len(L)
+  if l <= 1:
+    return L
+
+  l = len(L)
+  m = l // 2 #división entera
+  
+  #Divido la lista en dos partes.
+  Left = Array(m, tuple) #Parte izquierda.
+  for i in range(0,m):
+    Left[i] = L[i]
+
+  Right = Array(m,tuple) #Parte derecha.
+  k = 0
+  for j in range(m, l):
+    Right[k] = L[j]
+    k = k + 1
+
+  mergesortMOD(Left) #Ordena la parte izquierda...
+  mergesortMOD(Right) #y la derecha.
+
+  i = 0
+  j = 0
+  k = 0
+
+  while i < len(Left) and j < len(Right):
+    if Left[i] < Right[j]: #Si la izquierda es menor que la derecha...
+      L[k] = Left[i]
+      i = i + 1
+    else:
+      L[k] = Right[j]
+      j = j + 1
+    k = k + 1
+
+  #Guardo elementos restantes (si es que hay)
+  while i < len(Left):
+    L[k] = Left[i]
+    i = i + 1
+    k = k + 1
+  while j < len(Right):
+    L[k] = Right[j]
+    j = j + 1
+    k = k + 1
+
+
+
+
+
+
+
 
 
 "EXTRAS"
@@ -158,6 +284,7 @@ def create_flotatxt(n):
   with open('flota.txt', 'w') as f: #si no exite el archivo flota lo crea
     f.write('\n'.join(flota_m))
 
+#"---------------------------------------------------------------------------------"
 # genera un mes random para la lista de los barcos
 def random_month():
   mes = random.randint(1,12)
