@@ -51,14 +51,14 @@ def create_table(flota):
     pickle.dump(L_ab,f)
 
   d.insert(D,'fecha',flota[0]) #se resevar la key "fecha" para la fecha
-  d.insert(D,'boatnumber', n - 1)
+  d.insert(D,'boatnumber', n - 1) #guarda el número de embarcaciones
 
   for i in range(1,n):
     t = getInfo(flota[i])
     if t[3] != "N" and t[3] != "S" and t[3] != "E" and t[3] != "W" and t[3] != "NE" and t[3] != "NW" and t[3] != "SE" and t[3] != "SW":
       print("Error. No es una dirección posible.")
       return None
-    d.insert(D,t[0],(t[1],t[2],t[3]))
+    d.insert(D,t[0], t)
 
   return D
 
@@ -83,14 +83,15 @@ def getInfo(string):
 
 "Obetener posición"
 "---------------------------------------------------------------------------------"
-
-def getPos(date,value): #value es una tupla (posicion inicial x, posicion inicial y, dirección)
+#date es un día y value es una tupla (nombre, posicion inicial x, posicion inicial y, dirección)
+def getPos(date,value): 
   if date == 1:
-    return (value[0],value[1])
+    return (value[1],value[2])
 
-  x = value[0]
-  y = value[1]
-  direc = value[2]
+  x = value[1]
+  y = value[2]
+  direc = value[3]
+  # direc[0] es la primer letra
   if direc[0] == 'N':
     y = y + date - 1
   elif direc[0] == 'S':
@@ -99,9 +100,9 @@ def getPos(date,value): #value es una tupla (posicion inicial x, posicion inicia
     x = x - date + 1
   elif direc[0] == 'E':
     x = x + date - 1
-
+  #si la direccion de direc consiste en dos letras 
   if len(direc) > 1:
-    if direc[1] == 'W': #si no es ni N o S entonces solo se mueve en W o E
+    if direc[1] == 'W': 
       x = x - date + 1
     elif direc[1] == 'E':
       x = x + date - 1
@@ -127,7 +128,7 @@ def getDistance(b1,b2,date):
 
   b1_pos = getPos(date,b1_info)
   b2_pos = getPos(date,b2_info)
-  dist = math.sqrt(((b1_pos[0] - b2_pos[0])**2)+((b1_pos[1] - b2_pos[1])**2))
+  dist = calculateDistantance(b1_pos,b2_pos) 
   return dist
 
 #"---------------------------------------------------------------------------------"
@@ -173,12 +174,17 @@ def closestPairBF(date, flota, n):
 
 #"---------------------------------------------------------------------------------"
 def closestPair(date):
+  #se chequea el formato de la fecha
+  if len(date) > 2:
+    if not checkDate(date):
+      return None
+
   with open('tabla_flota.txt', 'rb') as f: #deserializacion
     flota = pickle.load(f)
 
   fecha = d.search(flota,'fecha')
   maxdays = getDays(fecha[3:5])
-  date = int(date)
+  date = int(date[0:1])
   if date < 1 and date > maxdays:
     print("No es una fecha posible.")
     return None
@@ -189,62 +195,74 @@ def closestPair(date):
     return closestPairBF(date, flota, n)
 
   m = d.search(flota,'boatnumber')
-
-  Px = Array(m, tuple)
-  Py = Array(m, tuple)
+  # dos arreglos de tuplas
+  Px = Array(m, tuple()) # ordenado según coordenada x
+  Py = Array(m, tuple()) # ordenado según coordenada y
+  k = 0
   for i in range(n):
     if flota[i] != None and flota[i].head.value[0] != 'fecha' and flota[i].head.value[0] != 'boatnumber':
-      Px[i] = flota[i].head.value
-      Py[i] = flota[i].head.value
-      
+      Px[k] = flota[i].head.value[1]
+      Py[k] = flota[i].head.value[1]
+      k += 1
+
+  mergesortMOD(Px,'x')
+  mergesortMOD(Py,'y')
+  
+
+    
 #"---------------------------------------------------------------------------------"
 #Merge Sort Modificado para ordenar barcos según coordenada x o y 
-
-def mergesortMOD(L):
+# L es un arreglo de tuplas (nombre, pos inicial en x, pos inicial en y, dirección) y coordinate puede ser 'x' o 'y'
+def mergesortMOD(L, coordinate): 
   l = len(L)
-  if l <= 1:
-    return L
+  if l > 1:
+    m1 = l // 2 #división entera
+    if l % 2 == 0: # si es par...
+      m2 = m1 # el largo de left y Right es igual
+    else: #sino
+      m2 = m1 + 1 # el largo de Right es mayor e una unidad
 
-  l = len(L)
-  m = l // 2 #división entera
-  
-  #Divido la lista en dos partes.
-  Left = Array(m, tuple) #Parte izquierda.
-  for i in range(0,m):
-    Left[i] = L[i]
+    #Divido la lista en dos partes.
+    Left = Array(m1, tuple()) #Parte izquierda.
+    for i in range(0,m1):
+      Left[i] = L[i]
 
-  Right = Array(m,tuple) #Parte derecha.
-  k = 0
-  for j in range(m, l):
-    Right[k] = L[j]
-    k = k + 1
+    Right = Array(m2, tuple()) #Parte derecha.
+    k = 0
+    for j in range(m1, l): #empieza donde termina left
+      Right[k] = L[j]
+      k = k + 1
 
-  mergesortMOD(Left) #Ordena la parte izquierda...
-  mergesortMOD(Right) #y la derecha.
+    mergesortMOD(Left, coordinate) #Ordena la parte izquierda...
+    mergesortMOD(Right, coordinate) #y la derecha.
 
-  i = 0
-  j = 0
-  k = 0
+    i = 0
+    j = 0
+    k = 0
 
-  while i < len(Left) and j < len(Right):
-    if Left[i] < Right[j]: #Si la izquierda es menor que la derecha...
+    if coordinate == 'x':
+      n = 1
+    elif coordinate == 'y':
+      n = 2
+      
+    while i < len(Left) and j < len(Right):
+      if Left[i][n] < Right[j][n]: #Si la izquierda es menor que la derecha...
+        L[k] = Left[i]
+        i = i + 1
+      else:
+        L[k] = Right[j]
+        j = j + 1
+      k = k + 1
+
+    #Guardo elementos restantes (si es que hay)
+    while i < len(Left):
       L[k] = Left[i]
       i = i + 1
-    else:
+      k = k + 1
+    while j < len(Right):
       L[k] = Right[j]
       j = j + 1
-    k = k + 1
-
-  #Guardo elementos restantes (si es que hay)
-  while i < len(Left):
-    L[k] = Left[i]
-    i = i + 1
-    k = k + 1
-  while j < len(Right):
-    L[k] = Right[j]
-    j = j + 1
-    k = k + 1
-
+      k = k + 1
 
 
 

@@ -86,6 +86,56 @@ def mergesort(L):
       k=k+1
 
 
+def mergesortARRAY(L):
+  l = len(L)
+  if l <= 1:
+    return L
+  
+  m1 = l // 2 #división entera
+  if l % 2 == 0: # si es par...
+    m2 = m1 # el largo de left y Right es igual
+  else: #sino
+    m2 = m1 + 1 # el largo de Right es mayor e una unidad
+
+  #Divido la lista en dos partes.
+  Left = Array(m1, 0) #Parte izquierda.
+  for i in range(0,m1):
+    Left[i] = L[i]
+
+  Right = Array(m2,0) #Parte derecha.
+  k = 0
+  for j in range(m1, l): #empiexa donde termina left
+    Right[k] = L[j]
+    k = k + 1
+
+  mergesortMOD(Left) #Ordena la parte izquierda...
+  mergesortMOD(Right) #y la derecha.
+
+  i = 0
+  j = 0
+  k = 0
+
+  while i < len(Left) and j < len(Right):
+    if Left[i] < Right[j]: #Si la izquierda es menor que la derecha...
+      L[k] = Left[i]
+      i = i + 1
+    else:
+      L[k] = Right[j]
+      j = j + 1
+    k = k + 1
+
+  #Guardo elementos restantes (si es que hay)
+  while i < len(Left):
+    L[k] = Left[i]
+    i = i + 1
+    k = k + 1
+  while j < len(Right):
+    L[k] = Right[j]
+    j = j + 1
+    k = k + 1
+
+  return L
+
       
 
 

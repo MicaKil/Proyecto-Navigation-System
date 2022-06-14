@@ -25,20 +25,25 @@ def create(local_path):
 "---------------------------------------------------------------------------------"
 #Devuelve la posición (X, Y) dado una fecha (<date>) y un nombre de embarcación (<nombre_embarcacion>)
 def search(date,nombre_embarcacion):
-  date = int(date)
+  #se chequea el formato de la fecha
+  if len(date) > 2:
+    if not aux.checkDate(date):
+      return None
+  # verifica si el número es válido
+  date = int(date[0:1])
   if date < 1 or date > 31:
     return print("Error. No es una fecha posible.")
-  
+  # buscamos la fecha del informe original  
   with open('tabla_flota.txt', 'rb') as f: #deserializacion
     flota = pickle.load(f)
-
+  # verficamos que el barco nombre_embarcacion se encuentre en el listado
   val = u.search(flota,nombre_embarcacion)
   if val == None:
     return print("Error. No se encontró una embarcación con ese nombre.")
 
   if date == 1: #en el día 1 están en la posición original
     return print(val[0],val[1])
-
+  #vericamos que sea un día posible (no supere los 28/30/31 diás según el mes)
   fecha = u.search(flota,'fecha')
   dias_max = aux.getDays(fecha[3:5]) #calcula cantidad de días en el mes
   if date > dias_max:
