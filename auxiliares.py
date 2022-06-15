@@ -9,7 +9,7 @@ import math
 "Verificación de fecha"
 "---------------------------------------------------------------------------------"
 #se fija que la fecha ingresada (string) tenga el formato correcto dd/mm/yyyy
-def checkDate(date):
+def checkDate(date): 
   if date[2] == date[5] == "/":
     mes = int(date[3:5]) #no toma el valor en la posición 5
     if mes>0 and mes<13:
@@ -51,7 +51,7 @@ def create_table(flota):
     pickle.dump(L_ab,f)
 
   d.insert(D,'fecha',flota[0]) #se resevar la key "fecha" para la fecha
-  d.insert(D,'boatnumber', n - 1) #guarda el número de embarcaciones
+  d.insert(D,'navysize', n - 1) #guarda el número de embarcaciones
 
   for i in range(1,n):
     t = getInfo(flota[i])
@@ -111,6 +111,149 @@ def getPos(date,value):
 
 "Funciones para calcular la distancia"
 "---------------------------------------------------------------------------------"
+def closestPair(date):
+  #se chequea el formato de la fecha
+  if len(date) > 2:
+    if not checkDate(date):
+      return None
+
+  with open('tabla_flota.txt', 'rb') as f: #deserializacion
+    flota = pickle.load(f)
+
+  fecha = d.search(flota,'fecha')
+  maxdays = getDays(fecha[3:5])
+  date = int(date[0:2])
+  if date < 1 and date > maxdays:
+    print("No es una fecha posible.")
+    return None
+
+  m = d.search(flota,'navysize')
+  # dos arreglos de tuplas
+  Bx = Array(m, tuple()) # ordenado según coordenada x
+  By = Array(m, tuple()) # ordenado según coordenada y
+  k = 0
+  for i in range(n):
+    if flota[i] != None and flota[i].head.value[0] != 'fecha' and flota[i].head.value[0] != 'navysize':
+      boat = flota[i].head.value[1]
+      b_pos = getPos(date,boat) #calculamos la posición del barco en date
+      Bx[k] = (boat[0],b_pos[0],b_pos[1],boat[3])
+      By[k] = (boat[0],b_pos[0],b_pos[1],boat[3])
+      k += 1
+
+  mergesortMOD(Bx,'x')
+  mergesortMOD(By,'y')
+
+  closest = closestPairR(Bx, By, k) # devuelve la tupla (distancia mínima, lista nombre barcos, pares de barcos)
+  if closest[2] > 1:
+    print ("La distancia mínima el día %d es %d entre los barcos:" %(date, closest[0]))
+    cur = closest[1].head
+    for i in range(closest[2]):
+      print(cur.value)
+      cur = cur.nextNode
+  else:
+    print ("La distancia mínima el día %d es %d entre los barcos %s y %s." %(date,closest[0], closest[1].head.value[0], closest[1].head.value[1]))
+  
+
+#"---------------------------------------------------------------------------------"
+def closestPairR(Px, Py, n):
+  if n <= 3:
+    return closestPairBF(Px, n)
+
+  mid = n // 2
+  print(n, mid)
+  midBoat = Px[mid] #barco en la posición media del plano (respecto a los demas barcos)
+  print("mid boat: ", midBoat)
+  #separamos a los barcos ordenados por la coordena 'x' segun si estan al oeste o al este de mid boat
+  # como ya están ordenados solo hay que dividir el array por la mitad
+  BxWest = Array(mid,tuple()) # barcos de Px al Oeste de la línea
+  BxEast = Array(n - mid,tuple())
+  for i in range(mid):
+    BxWest[i] = Px[i]
+  k = 0
+  for i in range(mid, n - mid): #contiene a mid boat
+    BxEast[k] = Px[i]
+    k += 1
+
+  #Dividimos las coordenadas ordenadas segun 'Y' al rededor de la línea vertical
+  # Asumimos que las coordenadas en x son distintas
+  ByWest = Array(mid,tuple()) # barcos de Py al Oeste de la línea
+  ByEast = Array(n - mid,tuple())
+  iW = 0 #indices de los arreglos
+  iE = 0
+  for i in range(n):
+    if Py[i] != midBoat:  
+      if (Py[i][1] < midBoat[1] and iW < mid):
+        print("West:", Py[i], midBoat[1], n, mid, n-mid, i, iW)
+        ByWest[iW] = Py[i]
+        iW += 1
+      elif iE < (n - mid):
+        print("East:", Py[i], midBoat[1], n, mid, n-mid, i, iE)
+        ByEast[iE] = Py[i]
+        iE += 1
+    
+  # consideramos la linea vertical pasando por el barco medio
+  # calcular la distancia mínima al Oeste de midBoat (dW) y al Este (dE)
+  dW = closestPairR(BxWest, ByWest, mid)
+  dE = closestPairR(BxEast, ByEast, n - mid)
+  
+  d = min(dW[0], dE[0]) # Tomamos la distancia menor
+
+  # guardamos los puntos cercanos (a una distancia <= a d) a la línea que pasa por midBoat
+  strip = Array(n, tuple())
+  j = 0
+  for i in range(n):
+    if (abs(Py[i][1] - midBoat[1]) < d):
+      strip[j] = Py
+      j += 1
+
+  return stripClosest(strip, j, d)
+
+#"---------------------------------------------------------------------------------"
+# busca los puntos más cercanos en una franja (strip) de tamaño determinado 
+def stripClosest(strip, n, d):
+  min_dist = d
+  min_boats = mll.LinkedList()
+  b = 1 
+  #parece O(n^2) pero...
+  for i in range(n):
+    j = i + 1
+    # está provado que este bucle corre en cuanto mucho 7 veces... Ver Cormen ;) 
+    while j < n and (strip[j][2] - strip[i][2]) < min_dist:
+      dist = calculateDistantance((strip[i][1], strip[i][2]), (strip[j][1], strip[j][2])) 
+      if dist == min_dist:
+        mll.add(min_boats, (strip[i][0],strip[j][0]))
+        b += 1
+      if dist < min_dist:
+        min_boats = mll.LinkedList() #se crea la lista que almacena el o los barcos
+        min_dist = dist
+        mll.add(min_boats, (strip[i][0],strip[j][0]))
+        b = 1 # se vuelve a 1
+      if dist < min_dist:
+        min_dist = dist 
+  
+  return (min_dist, min_boats, b)
+
+#"---------------------------------------------------------------------------------"
+# calcula por fuerza bruta la distancia más corta entre n < 3 barcos 
+# complejidad O(nC2) <= O(n^2) si n = 3 ent. (3C2) = 3 o sea O(1)
+def closestPairBF(flota, n): 
+  min_dist = 1e9
+  min_boats = mll.LinkedList() #para guardar los barcos en caso de que más de un par tenga la misma dist min
+  for i in range(n):
+    for j in range(i + 1,n):
+      dist = calculateDistantance((flota[i][1], flota[i][2]), (flota[j][1], flota[j][2])) 
+      if dist == min_dist:
+        mll.add(min_boats, (flota[i][0],flota[j][0]))
+        b += 1
+      if dist < min_dist:
+        min_boats = mll.LinkedList() #se crea la lista que almacena el o los barcos
+        min_dist = dist
+        mll.add(min_boats, (flota[i][0],flota[j][0]))
+        b = 1 # se vuelve a 1
+   
+  return (min_dist, min_boats, b)
+
+#"---------------------------------------------------------------------------------"
 #calcula la distancia entre dos barcos cuya posición desconocemos
 def getDistance(b1,b2,date):
   with open('tabla_flota.txt', 'rb') as f: #deserializacion
@@ -137,97 +280,19 @@ def calculateDistantance(Point1,Point2):
   return math.sqrt(((Point1[0] - Point2[0])**2)+((Point1[1] - Point2[1])**2))
 
 #"---------------------------------------------------------------------------------"
-# calcula por fuerza bruta la distancia más corta entre n < 3 barcos 
-# complejidad O(nC2) <= O(n^2)
-def closestPairBF(date, flota, n): 
-  min_dist = 1e9
-  min_boats = mll.LinkedList()
-  for i in range(n):
-    if flota[i] != None and flota[i].head.value[0] != 'fecha' and flota[i].head.value[0] != 'boatnumber':
-      for j in range(i,n):
-        if flota[j] != None and flota[j].head.value[0] != 'fecha' and flota[i].head.value[0] != 'boatnumber':
-          if i != j:
-            b1 = flota[i].head.value
-            b1_pos = getPos(date,b1[1])
-            b2 = flota[j].head.value
-            b2_pos = getPos(date,b2[1])
-            dist = calculateDistantance(b1_pos,b2_pos)
-            if dist == min_dist:
-              mll.add(min_boats, (b1[0],b2[0]))
-              boat_num += 1
-            if dist < min_dist:
-              min_boats = mll.LinkedList() #se crea la lista que almacena el o los barcos
-              min_dist = dist
-              mll.add(min_boats, (b1[0],b2[0]))
-              boat_num = 1 # se vuelve a 1
-  
-  if boat_num > 1:
-    print ("La distancia mínima el día %d es %d entre los barcos:" %(date,min_dist))
-    cur = min_boats.head
-    for i in range(boat_num):
-      print(cur.value)
-      cur = cur.nextNode
-  else:
-    print ("La distancia mínima el día %d es %d entre los barcos %s y %s." %(date,min_dist,min_boats.head.value[0],min_boats.head.value[1]))
-  
-  return min_dist
-
-#"---------------------------------------------------------------------------------"
-def closestPair(date):
-  #se chequea el formato de la fecha
-  if len(date) > 2:
-    if not checkDate(date):
-      return None
-
-  with open('tabla_flota.txt', 'rb') as f: #deserializacion
-    flota = pickle.load(f)
-
-  fecha = d.search(flota,'fecha')
-  maxdays = getDays(fecha[3:5])
-  date = int(date[0:1])
-  if date < 1 and date > maxdays:
-    print("No es una fecha posible.")
-    return None
-
-  boats_num = sympy.nextprime(1.5*4) #tamaño de la tabla con 3 barcos 
-  n = len(flota)
-  if n <= boats_num: #si tenemos 3 barcos (4 es la fecha)
-    return closestPairBF(date, flota, n)
-
-  m = d.search(flota,'boatnumber')
-  # dos arreglos de tuplas
-  Px = Array(m, tuple()) # ordenado según coordenada x
-  Py = Array(m, tuple()) # ordenado según coordenada y
-  k = 0
-  for i in range(n):
-    if flota[i] != None and flota[i].head.value[0] != 'fecha' and flota[i].head.value[0] != 'boatnumber':
-      Px[k] = flota[i].head.value[1]
-      Py[k] = flota[i].head.value[1]
-      k += 1
-
-  mergesortMOD(Px,'x')
-  mergesortMOD(Py,'y')
-  
-
-    
-#"---------------------------------------------------------------------------------"
 #Merge Sort Modificado para ordenar barcos según coordenada x o y 
 # L es un arreglo de tuplas (nombre, pos inicial en x, pos inicial en y, dirección) y coordinate puede ser 'x' o 'y'
 def mergesortMOD(L, coordinate): 
   l = len(L)
   if l > 1:
     m1 = l // 2 #división entera
-    if l % 2 == 0: # si es par...
-      m2 = m1 # el largo de left y Right es igual
-    else: #sino
-      m2 = m1 + 1 # el largo de Right es mayor e una unidad
 
     #Divido la lista en dos partes.
     Left = Array(m1, tuple()) #Parte izquierda.
     for i in range(0,m1):
       Left[i] = L[i]
 
-    Right = Array(m2, tuple()) #Parte derecha.
+    Right = Array(l - m1, tuple()) #Parte derecha.
     k = 0
     for j in range(m1, l): #empieza donde termina left
       Right[k] = L[j]
@@ -263,10 +328,6 @@ def mergesortMOD(L, coordinate):
       L[k] = Right[j]
       j = j + 1
       k = k + 1
-
-
-
-
 
 
 

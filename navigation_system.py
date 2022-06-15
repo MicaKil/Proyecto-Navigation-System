@@ -40,7 +40,7 @@ def search(date,nombre_embarcacion):
   val = u.search(flota,nombre_embarcacion)
   if val == None:
     return print("Error. No se encontró una embarcación con ese nombre.")
-
+  
   if date == 1: #en el día 1 están en la posición original
     return print(val[0],val[1])
   #vericamos que sea un día posible (no supere los 28/30/31 diás según el mes)
