@@ -9,32 +9,35 @@ import math
 
 "Verificación de fecha"
 "---------------------------------------------------------------------------------"
-#se fija que la fecha ingresada (string) tenga el formato correcto dd/mm/yyyy
-def checkDate(date): 
-  if date[2] == date[5] == "/":
-    mes = int(date[3:5]) #no toma el valor en la posición 5
-    if mes>0 and mes<13:
-      dia = date[0:2]
-      year = date[6:10]
-      if dia == '01'  and year == '2022':
-        return True
-  elif date[1] == date[4] == "/":
-    mes = int(date[2:4]) #no toma el valor en la posición 4
-    if mes > 0 and mes < 13:
-      dia = date[0:1]
-      year = date[5:9]
-      if dia == '1' and year == '2022':
-        return True
+# devuelve la tupla dia, mes y año de un string
+def getDMY(date):
+  day = None
+  month = None
+  year = None
+  n = len(date)
+  s = ''
+  k = 0
+  for i in range(n):
+    if date[i] != '/':
+      s += date[i]
+    if date[i] == '/' or i == n-1:
+      if k == 0:
+        day = int(s)
+      elif k == 1:
+        month = int(s)
+      elif k == 2:
+        year = int(s)
+      s = ''
+      k += 1
+  return (day,month,year)
 
-  print("Error: La fecha no comple con el formato especificado.")
-  return False #no cumple con el formato
-
-#"---------------------------------------------------------------------------------"
-#devuelve la cantidad de días en un mes
-def getDays(month): 
-  if month == "02":
+#---------------------------------------------------------------------------------
+# devuelve la cantidad de días en un mes
+def maxDays(month): 
+  if type(month) == str:
+    month = int(month)
+  if month == 2:
     return 28
-  month = int(month)
   if month % 2 == 0: #si es mes par
     if month < 8: #antes de agosto
       return 30
@@ -45,7 +48,52 @@ def getDays(month):
       return 31
     else: #desde agosto
       return 30
-    
+
+#---------------------------------------------------------------------------------
+# se fija que la fecha ingresada (string) del txt tenga el formato correcto
+def checkDate(date): 
+  (day,month,year) = getDMY(date)
+  if day == None or month == None or year == None:
+    print("Error: La fecha inicial no comple con el formato especificado dd/mm/yyyy.")
+    return False
+  if month > 12 or month < 1:
+    print("Error: El mes debe estar entre 1 y 12.")
+    return False
+  if day != 1 or year != 2022:
+    print("Error: La fecha debe ser 01/mm/2022.")
+    return False
+  return True
+
+#---------------------------------------------------------------------------------
+# se fija que la fecha ingresada (string) en las funciones tenga el formato correcto
+def verifyDate(date, tabla): 
+  # verificamos la fecha ingresada
+  (day, month, year) = getDMY(date) 
+  if day == None:
+    print("Error: No se ingresó un día.")
+    return False
+  if (day < 1 or day > 31):
+    print("Error: No es una fecha posible.")
+    return False
+  if month != None and (month < 1 or month > 12):
+    print("Error: No es una fecha posible.")
+    return False
+  #comparemos con la fecha de la tabla
+  fecha = d.search(tabla,'fecha')
+  (dia, m, y) = getDMY(fecha)
+  if month != None and month != m:
+    print("Error: El mes ingresado no coincide con el del informe (%d)." % m)
+    return False
+  if year != None and year != y:
+    print("Error: El año ingresado no coincide con el del informe (%d)." % y)
+    return False
+  #vericamos que sea un día posible (no supere los 28/30/31 diás según el mes)
+  dias_max = maxDays(m) #calcula cantidad de días en el mes
+  if day > dias_max:
+    print("Error: No es una fecha posible.")
+    return False
+  return True
+
 "Creación de Tabla"
 "---------------------------------------------------------------------------------"
 #crea una tabla hash a partir del txt
@@ -70,7 +118,7 @@ def create_table(flota):
 
   return D
 
-#"---------------------------------------------------------------------------------"
+#---------------------------------------------------------------------------------
 #pasa la informacion de un string del txt a una tupla
 def getInfo(string):
   str_val = ''
@@ -134,20 +182,21 @@ def closest(flota, day):
       Bx[k] = (boat[0],b_pos[0],b_pos[1],boat[3])
       By[k] = (boat[0],b_pos[0],b_pos[1],boat[3])
       k += 1
-
+  # ordenamos los barcos segun x y segun y (ascendente)
   mergesortMOD(Bx,'x')
   mergesortMOD(By,'y')
 
   return closestR(Bx, By)
 
+#---------------------------------------------------------------------------------
 def closestR(Bx, By):
   n = len(Bx)
   if n <= 3:
-    return closestBF(Bx)
+    return closestBF(Bx) #O(1)
   else:
     mid = n//2
     mid_x = Bx[mid][1] #coordenada x media
-    
+    #separamos los barcos en dos arreglos segun su posicion respecto a mid_x
     BxW = Array(mid, tuple()) #Barcos ordenados segun x al Oeste de mid_x
     BxE = Array(n - mid, tuple()) #Barcos ordenados segun x al Este de mid_x
     for i in range(mid):
@@ -156,7 +205,7 @@ def closestR(Bx, By):
     for i in range(mid,n):
       BxE[k] = Bx[i]
       k += 1
-
+    #separamos los barcos en dos arreglos segun su posicion respecto a mid_x
     ByW = Array(mid, tuple()) #Barcos ordenados segun x al Oeste de mid_x
     ByE = Array(n - mid, tuple()) #Barcos ordenados segun x al Este de mid_x
     iW = 0
@@ -168,10 +217,11 @@ def closestR(Bx, By):
       else:
         ByE[iE] = By[i]
         iE += 1
-    ByW = a.createSet(ByW)
-    ByE = a.createSet(ByE)
-
-    (deltaW, boatW) = closestR(BxW, ByW)
+    # al usar un arreglo puede haber espaciones en None
+    ByW = a.createSet(ByW) # los eliminamos
+    ByE = a.createSet(ByE) # O(n)
+    # buscamos la distancia más corta delta
+    (deltaW, boatW) = closestR(BxW, ByW) 
     (deltaE, boatE) = closestR(BxE, ByE)
     if deltaW < deltaE:
       delta = deltaW
@@ -179,24 +229,26 @@ def closestR(Bx, By):
     else:
       delta = deltaE
       boat = boatE
-
+    # comparamos lo elementos en la banda delimitada por delta
     band = Array(n, tuple())
     for i in range(n):
       if (mid_x - delta) < By[i][1] < (mid_x + delta):
         band[i] = By[i]
-
     band = a.createSet(band) 
     m = len(band)
-    for i in range(m):
+    # nos quedamos con la distancia más corta de esa banda
+    for i in range(m): # parenec O(n^2)
       end = min(i + 7, m)
-      for j in range(i + 1, end):
+      for j in range(i + 1, end): # pero está probado que este bucle corre en cuanto mucho 7 veces [Ver Cormen ;)]
         d = dist(band[i], band[j])
         if d < delta:
           delta = d
           boat = (band[i][0], band[j][0])
-
     return (delta, boat)  
 
+#---------------------------------------------------------------------------------
+# calcula la distancia entre dos barcos por fuerza bruta
+# la complejidad es nC2 (combinatorio) entonces si n = 3, 3C2 = 3 y, por lo tanto, O(1)
 def closestBF(B):
   min_dist = 1e9
   boat = (None, None)
@@ -209,8 +261,8 @@ def closestBF(B):
         boat = (B[i][0],B[j][0])
   return min_dist, boat
 
-#"---------------------------------------------------------------------------------"
-#Merge Sort Modificado para ordenar barcos según coordenada x o y 
+#---------------------------------------------------------------------------------
+# Merge Sort Modificado para ordenar barcos según coordenada x o y 
 # L es un arreglo de tuplas (nombre, pos inicial en x, pos inicial en y, dirección) y coordinate puede ser 'x' o 'y'
 def mergesortMOD(L, coordinate): 
   l = len(L)
@@ -281,7 +333,7 @@ def getDistance(b1, b2, date):
   dist = dist(b1_pos,b2_pos) 
   return dist
 
-#"---------------------------------------------------------------------------------"
+#---------------------------------------------------------------------------------
 # Dado dos barcos A y B (nombre, coordenada x, coordenada y, direccion) calcula su distancia 
 def dist(A, B):
   return math.sqrt(((A[1] - B[1])**2)+((A[2] - B[2])**2))
@@ -290,9 +342,9 @@ def dist(A, B):
 
 
 
+"================================================================================="
+"EXTRAS" 
 
-"EXTRAS"
-"---------------------------------------------------------------------------------"
 # las funciones create_flotatxt y random_month no están en pseudo-python porque no va a ser usadas en el programa ppal
 # su unico propósito es generar un txt para testeo 
 def create_flotatxt(n):
@@ -322,7 +374,7 @@ def create_flotatxt(n):
   with open('flota.txt', 'w') as f: #si no exite el archivo flota lo crea
     f.write('\n'.join(flota_m))
 
-#"---------------------------------------------------------------------------------"
+#---------------------------------------------------------------------------------
 # genera un mes random para la lista de los barcos
 def random_month():
   mes = random.randint(1,12)
