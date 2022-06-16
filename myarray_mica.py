@@ -77,3 +77,13 @@ def printMatriz(M):
     for j in range(n):
         print(M[i][j], end=' ')
 
+def createSet(A):
+  n = len(A)
+  m = length(A)
+  B = Array(m, tuple())
+  k = 0
+  for i in range(n):
+    if A[i] != None:
+      B[k] = A[i]
+      k += 1
+  return B

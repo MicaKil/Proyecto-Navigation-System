@@ -13,6 +13,8 @@ python navigation_system.py -search 2 b0
 
 *closer*
 python navigation_system.py -closer 1
+python navigation_system.py -closer 1/08/2022
+python navigation_system.py -closer 01/08/2022
 
 
 comandos  con error:
