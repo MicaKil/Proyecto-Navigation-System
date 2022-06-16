@@ -1,4 +1,4 @@
-Lista para hacer copy-paste de los comandos:
+Lista para hacer copy-paste de los comandos en la terminal:
 
 mica:
 
@@ -8,13 +8,25 @@ desde mi desktop
 python navigation_system.py -create C:\Users\micae\Desktop\flota10.txt
 
 *search*
-python navigation_system.py -search 2 b666 #NO ESTÁ
+python navigation_system.py -search 01/08/2022 b0 
+python navigation_system.py -search 01/8/2022 b0
+python navigation_system.py -search 1/08/2022 b0
+python navigation_system.py -search 2 b6969 #NO ESTÁ
 python navigation_system.py -search 2 b0
+python navigation_system.py -search 2/8 b0
+python navigation_system.py -search 2/08 b0
+python navigation_system.py -search 02 b0
+python navigation_system.py -search 2/7 b0
+python navigation_system.py -search 2/19 b0
 
 *closer*
 python navigation_system.py -closer 1
 python navigation_system.py -closer 1/08/2022
-python navigation_system.py -closer 01/08/2022
+python navigation_system.py -closer 1/09/2022
+python navigation_system.py -closer 20/08/2022
+python navigation_system.py -closer 2        
+python navigation_system.py -closer 2/8
+python navigation_system.py -closer 2/10
 
 
 comandos  con error:
