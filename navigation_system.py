@@ -1,9 +1,8 @@
 from algo1 import *
 import auxiliares as aux
-import dictionary_Universal as u
+import dictionary_universal as d
 import pickle
 import sys
-import math
 
 "---------------------------------------------------------------------------------"
 #Para la creación del índice de la biblioteca
@@ -26,55 +25,66 @@ def create(local_path):
 "---------------------------------------------------------------------------------"
 #Devuelve la posición (X, Y) dado una fecha (<date>) y un nombre de embarcación (<nombre_embarcacion>)
 def search(date,nombre_embarcacion):
-  date = int(date)
-  if date < 1 or date > 31:
+  #se chequea el formato de la fecha
+  if len(date) > 2:
+    if not aux.checkDate(date):
+      return None
+  # verificamos si el número es válido
+  s = date[0]
+  i = 1
+  while date[i] != '/' and i < len(date) :
+    s += date[i]
+    i += 1
+  day = int(s)
+  
+  if day < 1 or day > 31:
     return print("Error. No es una fecha posible.")
   
+  # buscamos la fecha del informe original  
   with open('tabla_flota.txt', 'rb') as f: #deserializacion
     flota = pickle.load(f)
-
-  val = u.search(flota,nombre_embarcacion)
+  # verficamos que el barco nombre_embarcacion se encuentre en el listado
+  val = d.search(flota,nombre_embarcacion)
   if val == None:
     return print("Error. No se encontró una embarcación con ese nombre.")
-
-  if date == 1: #en el día 1 están en la posición original
+  
+  if day == 1: #en el día 1 están en la posición original
     return print(val[0],val[1])
-
-  fecha = u.search(flota,'fecha')
+  #vericamos que sea un día posible (no supere los 28/30/31 diás según el mes)
+  fecha = d.search(flota,'fecha')
   dias_max = aux.getDays(fecha[3:5]) #calcula cantidad de días en el mes
-  if date > dias_max:
+  if day > dias_max:
     return print("Error. No es una fecha posible.")
 
-  pos = aux.getPos(date,val)
+  pos = aux.getPos(day,val)
   print("X: %d Y: %d" %(pos[0],pos[1]))
   return (pos[0],pos[1])
 
 "---------------------------------------------------------------------------------"
-"IMPLEMENTACIÓN FUERZA BRUTA CLOSER"
 #Devuelve el nombre de las dos embarcaciones más cercanas entre sí (menor distancia euclidiana)
-def closer(date): 
-  date = int(date)
+def closer(date): #HECHO PARA UN 1 BARCO DE MOMENTO
+  l = len(date)
+  # verificamos si el número es válido
+  s = date[0]
+  i = 1
+  while date[i] != '/' and i < l:
+    s += date[i]
+    i += 1
+  day = int(s)
+  
+  if day < 1 or day > 31:
+    return print("Error. No es una fecha posible.")
+  
   with open('tabla_flota.txt', 'rb') as f: #deserializacion
     flota = pickle.load(f)
-  n = len(flota)
-  min_dist = 1e9
-  count = 0
-  for i in range(n):
-    if flota[i] != None and flota[i].head.value[0] != 'fecha':
-      for j in range(i,n):
-        if flota[j] != None and flota[j].head.value[0] != 'fecha':
-          if i != j:
-            b1 = flota[i].head.value
-            b1_pos = aux.getPos(date,b1[1])
-            b2 = flota[j].head.value
-            b2_pos = aux.getPos(date,b2[1])
-            dist = math.sqrt(((b1_pos[0] - b2_pos[0])**2)+((b1_pos[1] - b2_pos[1])**2)) 
-            if dist < min_dist:
-              min_boats = (b1[0],b2[0])
-              min_dist = dist
-            count += 1
-  print ("La distancia mínima el día %d es %d entre los barcos %s y %s." %(date,min_dist,min_boats[0],min_boats[1]))
-  return min_dist
+  # buscamos la fecha del informe original
+  fecha = d.search(flota,'fecha')
+  dias_max = aux.getDays(fecha[3:5]) #calcula cantidad de días en el mes
+  if day > dias_max:
+    return print("Error. No es una fecha posible.")
+
+  closestPair = aux.closest(flota, day)
+  return print ("La distancia mínima el día %s es %d entre los barcos %s y %s." %(day,closestPair[0], closestPair[1][0], closestPair[1][1]))
 
 "---------------------------------------------------------------------------------"
 #Devuelve el día del mes (date) y los barcos que están involucrados en un riesgo de colisión. En caso que no exista ningún riesgo de colisión en el mes se devuelve False
