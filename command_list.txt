@@ -5,7 +5,21 @@ mica:
 desde mi desktop
 ----------------------------------------------------------------------
 *create:*
+
+10 barcos:
 python navigation_system.py -create C:\Users\micae\Desktop\flota10.txt
+
+20 barcos
+python navigation_system.py -create C:\Users\micae\Desktop\flota20.txt
+
+21 barcos
+python navigation_system.py -create C:\Users\micae\Desktop\flota21.txt
+
+22 barcos
+python navigation_system.py -create C:\Users\micae\Desktop\flota22.txt
+
+100 barcos
+python navigation_system.py -create C:\Users\micae\Desktop\flota100.txt
 
 *search*
 python navigation_system.py -search 01/08/2022 b0 

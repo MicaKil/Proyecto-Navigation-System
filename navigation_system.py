@@ -1,6 +1,7 @@
 from algo1 import *
 import auxiliares as aux
 import dictionary_universal as d
+import mylinkedlist_mica  as mll
 import pickle
 import sys
 
@@ -51,7 +52,9 @@ def closer(date): #HECHO PARA UN 1 BARCO DE MOMENTO
     return None
   day = aux.getDMY(date)[0]
   closestPair = aux.closest(flota, day)
-  return print ("La distancia mínima el día %s es %d entre los barcos %s y %s." %(day,closestPair[0], closestPair[1][0], closestPair[1][1]))
+  print ("La distancia mínima el día %s es %d entre los barcos:" %(day,closestPair[0]))
+  mll.printv(closestPair[1])
+  return 
 
 "---------------------------------------------------------------------------------"
 #Devuelve el día del mes (date) y los barcos que están involucrados en un riesgo de colisión. En caso que no exista ningún riesgo de colisión en el mes se devuelve False
