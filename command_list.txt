@@ -3,8 +3,9 @@ Lista para hacer copy-paste de los comandos en la terminal:
 mica:
 
 desde mi desktop
-----------------------------------------------------------------------
+
 *create:*
+----------------------------------------------------------------------
 
 10 barcos:
 python navigation_system.py -create C:\Users\micae\Desktop\flota10.txt
@@ -18,10 +19,20 @@ python navigation_system.py -create C:\Users\micae\Desktop\flota21.txt
 22 barcos
 python navigation_system.py -create C:\Users\micae\Desktop\flota22.txt
 
+25 barcos
+python navigation_system.py -create C:\Users\micae\Desktop\flota25.txt
+
+30 barcos
+python navigation_system.py -create C:\Users\micae\Desktop\flota30.txt
+
+31 barcos
+python navigation_system.py -create C:\Users\micae\Desktop\flota31.txt
+
 100 barcos
 python navigation_system.py -create C:\Users\micae\Desktop\flota100.txt
 
 *search*
+----------------------------------------------------------------------
 python navigation_system.py -search 01/08/2022 b0 
 python navigation_system.py -search 01/8/2022 b0
 python navigation_system.py -search 1/08/2022 b0
@@ -34,6 +45,7 @@ python navigation_system.py -search 2/7 b0
 python navigation_system.py -search 2/19 b0
 
 *closer*
+----------------------------------------------------------------------
 python navigation_system.py -closer 1
 python navigation_system.py -closer 1/08/2022
 python navigation_system.py -closer 1/09/2022
@@ -42,6 +54,39 @@ python navigation_system.py -closer 2
 python navigation_system.py -closer 2/8
 python navigation_system.py -closer 2/10
 
+RTAS closer
+10 barcos:
+(b9, b6, 1.0)
+
+22 barcos
+(b21, b20, 1.0)
+(b6, b22, 1.0)
+
+25 barcos
+RTA CORRECTA:
+(b21, b20, 1.0)
+(b25, b23, 1.0)
+(b23, b24, 1.0)
+(b6, b22, 1.0)
+
+30 barcos
+RTA CORRECTA:
+(b27, b28, 1.0)
+(b21, b20, 1.0)
+(b29, b27, 1.0)
+(b27, b26, 1.0)
+(b30, b27, 1.0)
+(b23, b25, 1.0)
+(b23, b24, 1.0)
+(b22, b6, 1.0)
+
+31 barcos
+RTA CORRECTA:
+(b0, b31, 0.0)
+
+100 barcos
+RTA: (falta verificar si hay más)
+(b63, b37, 1.0)
 
 comandos  con error:
 ----------------------------------------------------------------------

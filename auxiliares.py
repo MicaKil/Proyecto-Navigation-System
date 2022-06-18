@@ -186,6 +186,10 @@ def closest(flota, day):
   # ordenamos los barcos segun x y segun y (ascendente)
   mergesortMOD(Bx,'x')
   mergesortMOD(By,'y')
+  # print("Bx")
+  # print(Bx)
+  # print("By")
+  # print(By)
   BoatPairs = mll.LinkedList()
   return closestR(Bx, By, BoatPairs)
 
@@ -193,10 +197,16 @@ def closest(flota, day):
 def closestR(Bx, By, BPairs):
   lenBx = len(Bx)
   if lenBx <= 3:
+    #print("Brute Force", Bx)
     return closestBF(Bx, BPairs) #O(1)
   else:
     mid = lenBx//2
     mid_x = Bx[mid][1] #coordenada x media
+    # print("n:", lenBx, "mid:", mid, "mid_x:", mid_x)
+    # print("Bx")
+    # print(Bx)
+    # print("By")
+    # print(By)
     #separamos los barcos en dos arreglos segun su posicion respecto a mid_x
     BxW = Array(mid, tuple()) #Barcos ordenados segun x al Oeste de mid_x
     BxE = Array(lenBx - mid, tuple()) #Barcos ordenados segun x al Este de mid_x
@@ -229,11 +239,11 @@ def closestR(Bx, By, BPairs):
     bp = mll.LinkedList()
     if deltaW < deltaE:
       delta = deltaW
-      cur = boatPW.head
+      cur = boatPW.head #Si me dejan usar copy no hace falta este while
       while cur != None:
         mll.insert(bp, cur.value, mll.length(bp))
         cur = cur.nextNode
-      #bp = copy.deepcopy(boatPW) #Si me dejan usar copy
+      #bp = copy.deepcopy(boatPW) 
     else:
       delta = deltaE
       cur = boatPE.head
@@ -245,22 +255,25 @@ def closestR(Bx, By, BPairs):
     # comparamos lo elementos en la banda delimitada por delta
     band = Array(lenBy, tuple())
     for i in range(lenBy):
-      if (mid_x - delta) < By[i][1] < (mid_x + delta):
+      if (mid_x - delta) <= By[i][1] <= (mid_x + delta):
         band[i] = By[i]
     band = a.createSet(band) 
+    #print("Banda", band)
     lenBand = len(band)
     # nos quedamos con la distancia más corta de esa banda
-    
-    for i in range(lenBand): # parenec O(n^2)
+    for i in range(lenBand): # parece O(n^2)....
       end = min(i + 7, lenBand)
       for j in range(i + 1, end): # pero está probado que este bucle corre en cuanto mucho 7 veces [Ver Cormen ;)]
         d = dist(band[i], band[j])
-        if d == delta and ((mll.search(bp, (band[i][0], band[j][0], d)), mll.search(bp, (band[j][0], band[i][0], d))) == (False, False)):
+        #print("smart:", band[i], band[j])
+        if d == delta and ((mll.search(bp, (band[i][0], band[j][0], d)), mll.search(bp, (band[j][0], band[i][0], d))) == (None, None)):
           mll.add(bp, (band[i][0], band[j][0], d))
           # print("here TOP 1")
           # mll.printh(BPairs)
           # mll.printh(bp) 
         if d < delta:
+          delta = d
+          # print(d, delta)
           # print("here TOP 2")
           # mll.printh(BPairs)
           # mll.printh(bp)
@@ -291,7 +304,7 @@ def closestBF(B, BPairs):
   for i in range(n):
     for j in range(i + 1, n):
       d = dist(B[i],B[j])
-      if d == min_dist and ((mll.search(bp, (B[i][0], B[j][0], d)), mll.search(bp, (B[j][0], B[i][0], d))) == (False, False)): #O(1) en cuanto mucho hay tres elementos
+      if d == min_dist and ((mll.search(bp, (B[i][0], B[j][0], d)), mll.search(bp, (B[j][0], B[i][0], d))) == (None,None)): #O(1) en cuanto mucho hay tres elementos
         mll.add(bp, (B[i][0], B[j][0], d))
         # print("here BF 1")  
         # mll.printh(BPairs)
@@ -308,16 +321,17 @@ def closestBF(B, BPairs):
   addToBPairs(BPairs, bp, min_dist)
   return (min_dist, BPairs)
   
-def addToBPairs(BPairs, bp, min_dist):
-  if BPairs.head != None and BPairs.head.value[2] == min_dist and ((mll.search(bp, (BPairs.head.value[0], BPairs.head.value[1], min_dist)), mll.search(bp, (BPairs.head.value[1], BPairs.head.value[0], min_dist))) == (False, False)):
+def addToBPairs(BPairs, bp, d):
+  if BPairs.head != None and BPairs.head.value[2] == d:
     # print("here ADD 4")
     # mll.printh(BPairs)
     # mll.printh(bp)
     cur = bp.head
     while cur != None:
-      mll.add(BPairs, cur.value)
+      if ((mll.search(BPairs, cur.value), mll.search(BPairs, (cur.value[1], cur.value[0], d))) == (None, None)):
+        mll.add(BPairs, cur.value)
       cur = cur.nextNode
-  if BPairs.head == None or (BPairs.head != None and BPairs.head.value[2] > min_dist):
+  if BPairs.head == None or (BPairs.head != None and BPairs.head.value[2] > d):
     # print("here ADD 3")
     # mll.printh(BPairs)
     # mll.printh(bp)
