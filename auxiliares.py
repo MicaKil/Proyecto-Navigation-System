@@ -1,6 +1,7 @@
 from algo1 import *
 import random
 import sympy #para buscar un número primo
+import copy
 import dictionary_universal as d
 import mylinkedlist_mica as mll
 import myarray_mica as a
@@ -185,32 +186,33 @@ def closest(flota, day):
   # ordenamos los barcos segun x y segun y (ascendente)
   mergesortMOD(Bx,'x')
   mergesortMOD(By,'y')
-
-  return closestR(Bx, By)
+  BoatPairs = mll.LinkedList()
+  return closestR(Bx, By, BoatPairs)
 
 #---------------------------------------------------------------------------------
-def closestR(Bx, By):
-  n = len(Bx)
-  if n <= 3:
-    return closestBF(Bx) #O(1)
+def closestR(Bx, By, BPairs):
+  lenBx = len(Bx)
+  if lenBx <= 3:
+    return closestBF(Bx, BPairs) #O(1)
   else:
-    mid = n//2
+    mid = lenBx//2
     mid_x = Bx[mid][1] #coordenada x media
     #separamos los barcos en dos arreglos segun su posicion respecto a mid_x
     BxW = Array(mid, tuple()) #Barcos ordenados segun x al Oeste de mid_x
-    BxE = Array(n - mid, tuple()) #Barcos ordenados segun x al Este de mid_x
+    BxE = Array(lenBx - mid, tuple()) #Barcos ordenados segun x al Este de mid_x
     for i in range(mid):
       BxW[i] = Bx[i]
     k = 0
-    for i in range(mid,n):
+    for i in range(mid,lenBx):
       BxE[k] = Bx[i]
       k += 1
     #separamos los barcos en dos arreglos segun su posicion respecto a mid_x
-    ByW = Array(mid, tuple()) #Barcos ordenados segun x al Oeste de mid_x
-    ByE = Array(n - mid, tuple()) #Barcos ordenados segun x al Este de mid_x
+    ByW = Array(lenBx, tuple()) #Barcos ordenados segun x al Oeste de mid_x
+    ByE = Array(lenBx, tuple()) #Barcos ordenados segun x al Este de mid_x
     iW = 0
     iE = 0
-    for i in range(n):
+    lenBy = len(By)
+    for i in range(lenBy):
       if By[i][1] < mid_x:
         ByW[iW] = By[i]
         iW += 1
@@ -221,46 +223,113 @@ def closestR(Bx, By):
     ByW = a.createSet(ByW) # los eliminamos
     ByE = a.createSet(ByE) # O(n)
     # buscamos la distancia más corta delta
-    (deltaW, boatW) = closestR(BxW, ByW) 
-    (deltaE, boatE) = closestR(BxE, ByE)
+    (deltaW, boatPW) = closestR(BxW, ByW, BPairs) 
+    (deltaE, boatPE) = closestR(BxE, ByE, BPairs)
+
+    bp = mll.LinkedList()
     if deltaW < deltaE:
       delta = deltaW
-      boat = boatW
+      cur = boatPW.head
+      while cur != None:
+        mll.insert(bp, cur.value, mll.length(bp))
+        cur = cur.nextNode
+      #bp = copy.deepcopy(boatPW) #Si me dejan usar copy
     else:
       delta = deltaE
-      boat = boatE
+      cur = boatPE.head
+      while cur != None:
+        mll.insert(bp, cur.value, mll.length(bp))
+        cur = cur.nextNode
+      #bp = copy.deepcopy(boatPE)
+
     # comparamos lo elementos en la banda delimitada por delta
-    band = Array(n, tuple())
-    for i in range(n):
+    band = Array(lenBy, tuple())
+    for i in range(lenBy):
       if (mid_x - delta) < By[i][1] < (mid_x + delta):
         band[i] = By[i]
     band = a.createSet(band) 
-    m = len(band)
+    lenBand = len(band)
     # nos quedamos con la distancia más corta de esa banda
-    for i in range(m): # parenec O(n^2)
-      end = min(i + 7, m)
+    
+    for i in range(lenBand): # parenec O(n^2)
+      end = min(i + 7, lenBand)
       for j in range(i + 1, end): # pero está probado que este bucle corre en cuanto mucho 7 veces [Ver Cormen ;)]
         d = dist(band[i], band[j])
+        if d == delta and ((mll.search(bp, (band[i][0], band[j][0], d)), mll.search(bp, (band[j][0], band[i][0], d))) == (False, False)):
+          mll.add(bp, (band[i][0], band[j][0], d))
+          # print("here TOP 1")
+          # mll.printh(BPairs)
+          # mll.printh(bp) 
         if d < delta:
-          delta = d
-          boat = (band[i][0], band[j][0])
-    return (delta, boat)  
+          # print("here TOP 2")
+          # mll.printh(BPairs)
+          # mll.printh(bp)
+          bp.head = None
+          # print("here TOP 2.5")
+          # mll.printh(BPairs)
+          # mll.printh(bp)
+          mll.add(bp, (band[i][0], band[j][0], d))
+    #       print("here TOP 3")
+    #       mll.printh(BPairs)
+    #       mll.printh(bp)
+    # print("wtf")
+    # mll.printh(BPairs)
+    # mll.printh(bp)
+    addToBPairs(BPairs, bp, delta)
+    # print("wth")
+    # mll.printh(BPairs)
+    # mll.printh(bp)
+    return (delta, BPairs) 
 
 #---------------------------------------------------------------------------------
 # calcula la distancia entre dos barcos por fuerza bruta
 # la complejidad es nC2 (combinatorio) entonces si n = 3, 3C2 = 3 y, por lo tanto, O(1)
-def closestBF(B):
+def closestBF(B, BPairs):
   min_dist = 1e9
-  boat = (None, None)
+  bp = mll.LinkedList()
   n = len(B)
   for i in range(n):
     for j in range(i + 1, n):
       d = dist(B[i],B[j])
+      if d == min_dist and ((mll.search(bp, (B[i][0], B[j][0], d)), mll.search(bp, (B[j][0], B[i][0], d))) == (False, False)): #O(1) en cuanto mucho hay tres elementos
+        mll.add(bp, (B[i][0], B[j][0], d))
+        # print("here BF 1")  
+        # mll.printh(BPairs)
+        # mll.printh(bp)
       if d < min_dist:
         min_dist = d
-        boat = (B[i][0],B[j][0])
-  return min_dist, boat
+        bp.head = None
+        mll.add(bp, (B[i][0], B[j][0], d))
+        # print("here BF 2")  
+        # mll.printh(BPairs)
+        # mll.printh(bp)
+       
 
+  addToBPairs(BPairs, bp, min_dist)
+  return (min_dist, BPairs)
+  
+def addToBPairs(BPairs, bp, min_dist):
+  if BPairs.head != None and BPairs.head.value[2] == min_dist and ((mll.search(bp, (BPairs.head.value[0], BPairs.head.value[1], min_dist)), mll.search(bp, (BPairs.head.value[1], BPairs.head.value[0], min_dist))) == (False, False)):
+    # print("here ADD 4")
+    # mll.printh(BPairs)
+    # mll.printh(bp)
+    cur = bp.head
+    while cur != None:
+      mll.add(BPairs, cur.value)
+      cur = cur.nextNode
+  if BPairs.head == None or (BPairs.head != None and BPairs.head.value[2] > min_dist):
+    # print("here ADD 3")
+    # mll.printh(BPairs)
+    # mll.printh(bp)
+    BPairs.head = None
+    cur = bp.head
+    while cur != None:
+      mll.add(BPairs, cur.value)
+      cur = cur.nextNode
+  # print("here ADD 5")
+  # mll.printh(BPairs)
+  # mll.printh(bp)
+  return BPairs
 #---------------------------------------------------------------------------------
 # Merge Sort Modificado para ordenar barcos según coordenada x o y 
 # L es un arreglo de tuplas (nombre, pos inicial en x, pos inicial en y, dirección) y coordinate puede ser 'x' o 'y'
@@ -268,30 +337,24 @@ def mergesortMOD(L, coordinate):
   l = len(L)
   if l > 1:
     m1 = l // 2 #división entera
-
     #Divido la lista en dos partes.
     Left = Array(m1, tuple()) #Parte izquierda.
     for i in range(0,m1):
       Left[i] = L[i]
-
     Right = Array(l - m1, tuple()) #Parte derecha.
     k = 0
     for j in range(m1, l): #empieza donde termina left
       Right[k] = L[j]
       k = k + 1
-
     mergesortMOD(Left, coordinate) #Ordena la parte izquierda...
     mergesortMOD(Right, coordinate) #y la derecha.
-
     i = 0
     j = 0
     k = 0
-
     if coordinate == 'x':
       n = 1
     elif coordinate == 'y':
       n = 2
-      
     while i < len(Left) and j < len(Right):
       if Left[i][n] < Right[j][n]: #Si la izquierda es menor que la derecha...
         L[k] = Left[i]
@@ -300,7 +363,6 @@ def mergesortMOD(L, coordinate):
         L[k] = Right[j]
         j = j + 1
       k = k + 1
-
     #Guardo elementos restantes (si es que hay)
     while i < len(Left):
       L[k] = Left[i]
@@ -385,6 +447,7 @@ def random_month():
     mes = str(mes)
   return "01/"+ mes + "/2022"
 
+    
 "---------------------------------------------------------------------------------"
 "FUNCIONES PICKLE"
 
