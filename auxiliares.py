@@ -320,7 +320,8 @@ def closestBF(B, BPairs):
 
   addToBPairs(BPairs, bp, min_dist)
   return (min_dist, BPairs)
-  
+
+#---------------------------------------------------------------------------------
 def addToBPairs(BPairs, bp, d):
   if BPairs.head != None and BPairs.head.value[2] == d:
     # print("here ADD 4")
@@ -344,6 +345,7 @@ def addToBPairs(BPairs, bp, d):
   # mll.printh(BPairs)
   # mll.printh(bp)
   return BPairs
+
 #---------------------------------------------------------------------------------
 # Merge Sort Modificado para ordenar barcos según coordenada x o y 
 # L es un arreglo de tuplas (nombre, pos inicial en x, pos inicial en y, dirección) y coordinate puede ser 'x' o 'y'
