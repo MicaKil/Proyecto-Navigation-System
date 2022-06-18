@@ -44,7 +44,7 @@ def search(date,nombre_embarcacion):
 
 "---------------------------------------------------------------------------------"
 #Devuelve el nombre de las dos embarcaciones más cercanas entre sí (menor distancia euclidiana)
-def closer(date): #HECHO PARA UN 1 BARCO DE MOMENTO
+def closer(date): 
   with open('tabla_flota.txt', 'rb') as f: #deserializacion
     flota = pickle.load(f)
   # verificamos la fecha
