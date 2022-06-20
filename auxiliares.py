@@ -3,6 +3,7 @@ import random
 import dictionary as d
 import mylinkedlist_mica as mll
 import myarray_mica as a
+import Stack_Emmanuel as SE
 import pickle
 import math
 
