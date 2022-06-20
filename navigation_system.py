@@ -59,8 +59,16 @@ def closer(date):
 
 "---------------------------------------------------------------------------------"
 #Devuelve el día del mes (date) y los barcos que están involucrados en un riesgo de colisión. En caso que no exista ningún riesgo de colisión en el mes se devuelve False
-def collision():
-  return
+def collision(): 
+  with open('tabla_flota.txt', 'rb') as f: #deserializacion
+    flota = pickle.load(f)
+  collisionList = aux.colisiones(flota, day)
+  Cur=collisionList.head
+  while Cur!=None:
+    print ("El día %s, los barcos %d y %d estuvieron en riesgo de colisión" %(Cur.value[2],Cur.value[0][0],Cur.value[1][0]))
+    Cur=Cur.nextNode
+  print("")
+  return 
 
 "---------------------------------------------------------------------------------"
 #Devuelve un ranking (10) de las embarcaciones más cercanas entre sí.
