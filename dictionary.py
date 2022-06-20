@@ -35,7 +35,8 @@ def doublehash(D, h1, keyval, m):
     m1 = m - 1
     h2 = 1 + (keyval % m1)
     i = 0
-    while i < m:
+    end = min(50, m)
+    while i < end:
         h = (h1 + i*h2) % m
         if D[h] == None:
             return h
@@ -66,7 +67,7 @@ def linearprob(D, h1, m):
 
 "----------------------------------------------------------------"
 
-def search(D,key): #O(2n)
+def search(D,key): #O(n)
     m = len(D)
     if type(key) == str:
         keyval = string_hash(key)
@@ -87,7 +88,8 @@ def doublehashSearch(D, h1, keyval, key, m):
     m1 = m - 1
     h2 = 1 + (keyval % m1)
     i = 0
-    while i < m:
+    end = min(50, m)
+    while i < end:
         h = (h1 + i*h2) % m
         if D[h] != None and D[h][0] == key:
             return D[h][1] 
