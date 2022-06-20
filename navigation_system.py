@@ -1,6 +1,6 @@
 from algo1 import *
 import auxiliares as aux
-import dictionary_universal as d
+import dictionary as d
 import mylinkedlist_mica  as mll
 import pickle
 import sys
@@ -17,6 +17,7 @@ def create(local_path):
   # creamos el diccionario de la embarcación
   T = aux.create_table(flota)
   if T == None:
+    print("Error: No se pudo crear la tabla de embarcaciones.")
     return None
   with open('tabla_flota.txt', 'wb') as f: #lo serializamos
     pickle.dump(T,f)

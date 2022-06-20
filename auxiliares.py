@@ -1,8 +1,6 @@
 from algo1 import *
 import random
-import sympy #para buscar un número primo
-import copy
-import dictionary_universal as d
+import dictionary as d
 import mylinkedlist_mica as mll
 import myarray_mica as a
 import pickle
@@ -80,7 +78,7 @@ def verifyDate(date, tabla):
     print("Error: No es una fecha posible.")
     return False
   #comparemos con la fecha de la tabla
-  fecha = d.search(tabla,'fecha')
+  fecha = tabla.date
   (dia, m, y) = getDMY(fecha)
   if month != None and month != m:
     print("Error: El mes ingresado no coincide con el del informe (%d)." % m)
@@ -100,23 +98,20 @@ def verifyDate(date, tabla):
 #crea una tabla hash a partir del txt
 def create_table(flota):
   n = len(flota) 
-  l = sympy.nextprime(1.5*n) #el tamaño de la tabla es un primo mayor a 1,5 * len(flota_list) 
-  D = Array(l,mll.LinkedList())
+  l = next_prime(1.5*n) #el tamaño de la tabla es un primo mayor a 1,5 * len(flota_list)
+  D = Array(l,tuple())
 
-  L_ab = mll.LinkedList() #para guardar los (a,b) usados en universal hashing
-  with open('lista_ab.txt', 'wb') as f: #lo serializamos
-    pickle.dump(L_ab,f)
-
-  d.insert(D,'fecha',flota[0]) #se resevar la key "fecha" para la fecha
-  d.insert(D,'navysize', n - 1) #guarda el número de embarcaciones
+  D.date = flota[0] #guardamos la fecha inicial como atributo de la tabla
+  D.size = n - 1 #guardamos el número de embarcaciones
 
   for i in range(1,n):
     t = getInfo(flota[i])
     if t[3] != "N" and t[3] != "S" and t[3] != "E" and t[3] != "W" and t[3] != "NE" and t[3] != "NW" and t[3] != "SE" and t[3] != "SW":
       print("Error. No es una dirección posible.")
       return None
-    d.insert(D,t[0], t)
-
+    t_insert = d.insert(D,t[0], t, l)
+    if t_insert == None:
+      return None
   return D
 
 #---------------------------------------------------------------------------------
@@ -131,12 +126,26 @@ def getInfo(string):
     else:
       if j == 1 or j == 2:
         str_val = int(str_val)
-      mll.insert(e,str_val,j)
+      mll.insert(e,str_val,j) #O(4)
       j += 1
       str_val = ''
 
   output = (e.head.value, e.head.nextNode.value, e.head.nextNode.nextNode.value, e.head.nextNode.nextNode.nextNode.value)
   return output
+
+#---------------------------------------------------------------------------------
+def next_prime(n):
+  n = int(n)
+  while is_prime(n) == False:
+    n += 1
+  return n
+
+def is_prime(n):
+  end = int(math.sqrt(n))+1
+  for i in range(2,end):
+    if (n%i) == 0:
+      return False
+  return True
 
 "Obetener posición"
 "---------------------------------------------------------------------------------"
@@ -169,7 +178,7 @@ def getPos(date,value):
 "Closest Pair"
 "---------------------------------------------------------------------------------"
 def closest(flota, day):
-  n = d.search(flota,'navysize') #número de embarcaciones
+  n = flota.size #número de embarcaciones
   m = len(flota)
 
   Bx = Array(n, tuple()) # Barcos ordenados segun x
@@ -177,8 +186,8 @@ def closest(flota, day):
 
   k = 0
   for i in range(m):
-    if flota[i] != None and flota[i].head.value[0] != 'fecha' and flota[i].head.value[0] != 'navysize':
-      boat = flota[i].head.value[1]
+    if flota[i] != None:
+      boat = flota[i][1]
       b_pos = getPos(day,boat) #calculamos la posición del barco en day
       Bx[k] = (boat[0],b_pos[0],b_pos[1],boat[3])
       By[k] = (boat[0],b_pos[0],b_pos[1],boat[3])
@@ -186,10 +195,6 @@ def closest(flota, day):
   # ordenamos los barcos segun x y segun y (ascendente)
   mergesortMOD(Bx,'x')
   mergesortMOD(By,'y')
-  # print("Bx")
-  # print(Bx)
-  # print("By")
-  # print(By)
   BoatPairs = mll.LinkedList()
   return closestR(Bx, By, BoatPairs)
 
@@ -197,16 +202,10 @@ def closest(flota, day):
 def closestR(Bx, By, BPairs):
   lenBx = len(Bx)
   if lenBx <= 3:
-    #print("Brute Force", Bx)
     return closestBF(Bx, BPairs) #O(1)
   else:
     mid = lenBx//2
     mid_x = Bx[mid][1] #coordenada x media
-    # print("n:", lenBx, "mid:", mid, "mid_x:", mid_x)
-    # print("Bx")
-    # print(Bx)
-    # print("By")
-    # print(By)
     #separamos los barcos en dos arreglos segun su posicion respecto a mid_x
     BxW = Array(mid, tuple()) #Barcos ordenados segun x al Oeste de mid_x
     BxE = Array(lenBx - mid, tuple()) #Barcos ordenados segun x al Este de mid_x
@@ -239,18 +238,16 @@ def closestR(Bx, By, BPairs):
     bp = mll.LinkedList()
     if deltaW < deltaE:
       delta = deltaW
-      cur = boatPW.head #Si me dejan usar copy no hace falta este while
+      cur = boatPW.head 
       while cur != None:
         mll.insert(bp, cur.value, mll.length(bp))
         cur = cur.nextNode
-      #bp = copy.deepcopy(boatPW) 
     else:
       delta = deltaE
       cur = boatPE.head
       while cur != None:
         mll.insert(bp, cur.value, mll.length(bp))
         cur = cur.nextNode
-      #bp = copy.deepcopy(boatPE)
 
     # comparamos lo elementos en la banda delimitada por delta
     band = Array(lenBy, tuple())
@@ -258,40 +255,19 @@ def closestR(Bx, By, BPairs):
       if (mid_x - delta) <= By[i][1] <= (mid_x + delta):
         band[i] = By[i]
     band = a.createSet(band) 
-    #print("Banda", band)
     lenBand = len(band)
     # nos quedamos con la distancia más corta de esa banda
     for i in range(lenBand): # parece O(n^2)....
       end = min(i + 7, lenBand)
       for j in range(i + 1, end): # pero está probado que este bucle corre en cuanto mucho 7 veces [Ver Cormen ;)]
         d = dist(band[i], band[j])
-        #print("smart:", band[i], band[j])
         if d == delta and ((mll.search(bp, (band[i][0], band[j][0], d)), mll.search(bp, (band[j][0], band[i][0], d))) == (None, None)):
           mll.add(bp, (band[i][0], band[j][0], d))
-          # print("here TOP 1")
-          # mll.printh(BPairs)
-          # mll.printh(bp) 
         if d < delta:
           delta = d
-          # print(d, delta)
-          # print("here TOP 2")
-          # mll.printh(BPairs)
-          # mll.printh(bp)
           bp.head = None
-          # print("here TOP 2.5")
-          # mll.printh(BPairs)
-          # mll.printh(bp)
           mll.add(bp, (band[i][0], band[j][0], d))
-    #       print("here TOP 3")
-    #       mll.printh(BPairs)
-    #       mll.printh(bp)
-    # print("wtf")
-    # mll.printh(BPairs)
-    # mll.printh(bp)
     addToBPairs(BPairs, bp, delta)
-    # print("wth")
-    # mll.printh(BPairs)
-    # mll.printh(bp)
     return (delta, BPairs) 
 
 #---------------------------------------------------------------------------------
@@ -306,44 +282,27 @@ def closestBF(B, BPairs):
       d = dist(B[i],B[j])
       if d == min_dist and ((mll.search(bp, (B[i][0], B[j][0], d)), mll.search(bp, (B[j][0], B[i][0], d))) == (None,None)): #O(1) en cuanto mucho hay tres elementos
         mll.add(bp, (B[i][0], B[j][0], d))
-        # print("here BF 1")  
-        # mll.printh(BPairs)
-        # mll.printh(bp)
       if d < min_dist:
         min_dist = d
         bp.head = None
-        mll.add(bp, (B[i][0], B[j][0], d))
-        # print("here BF 2")  
-        # mll.printh(BPairs)
-        # mll.printh(bp)
-       
-
+        mll.add(bp, (B[i][0], B[j][0], d))  
   addToBPairs(BPairs, bp, min_dist)
   return (min_dist, BPairs)
 
 #---------------------------------------------------------------------------------
 def addToBPairs(BPairs, bp, d):
   if BPairs.head != None and BPairs.head.value[2] == d:
-    # print("here ADD 4")
-    # mll.printh(BPairs)
-    # mll.printh(bp)
     cur = bp.head
     while cur != None:
       if ((mll.search(BPairs, cur.value), mll.search(BPairs, (cur.value[1], cur.value[0], d))) == (None, None)):
         mll.add(BPairs, cur.value)
       cur = cur.nextNode
   if BPairs.head == None or (BPairs.head != None and BPairs.head.value[2] > d):
-    # print("here ADD 3")
-    # mll.printh(BPairs)
-    # mll.printh(bp)
     BPairs.head = None
     cur = bp.head
     while cur != None:
       mll.add(BPairs, cur.value)
       cur = cur.nextNode
-  # print("here ADD 5")
-  # mll.printh(BPairs)
-  # mll.printh(bp)
   return BPairs
 
 #---------------------------------------------------------------------------------
