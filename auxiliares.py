@@ -304,6 +304,289 @@ def addToBPairs(BPairs, bp, d):
       mll.add(BPairs, cur.value)
       cur = cur.nextNode
   return BPairs
+#---------------------------------------------------------------------------------
+#obtiene la direccion en un par (X,Y)
+def DirIntFormat(Dir):
+  if len(Dir)==1:
+    if Dir=="W":
+      X=-1
+      Y=0
+    elif Dir=="E":
+      X=1
+      Y=0
+    elif Dir=="S":
+      X=0
+      Y=-1
+    else:
+      X=0
+      Y=1
+  else:
+    if Dir[0]=='S':
+      Y=-1
+    else:
+      Y=1
+    if Dir[1]=='W':
+      X=-1
+    else:
+      X=1
+  return(X,Y)
+#---------------------------------------------------------------------------------
+#utilizando las posiciones inicial y las direcciones de los barcos, obtengo la relacion entre las distancias en cada eje
+def obtainRelationDir(Barco1,Barco2):
+  Dir1=Barco1[3]
+  Pos1=(Barco1[1],Barco1[2])
+  IntDir1=DirIntFormat(Dir1)
+  Dir2=Barco2[3]
+  Pos2=(Barco2[1],Barco2[2])
+  IntDir2=DirIntFormat(Dir2)
+
+  RelDirX=IntDir2[0]-IntDir1[0]
+  if Pos1[0]<Pos2[0]:
+    RelDirX=-RelDirX
+  elif Pos1[0]==Pos2[0]:
+    RelDirX=abs(RelDirX)
+
+  RelDirY=IntDir2[1]-IntDir1[1]
+  if Pos1[1]>Pos2[1]:
+    RelDirY=-RelDirY
+  elif Pos1[1]==Pos2[1]:
+    RelDirY=abs(RelDirY)
+
+  return(RelDirX,RelDirY)
+#---------------------------------------------------------------------------------
+#obtengo la distancia minima a lo largo del mes para un par de barcos
+def obtainMinDist(Barco1,Barco2,date):
+  #Formato Barco ("nombre",CoorX,CoorY,"Direccion")
+  K=obtainRelationDir(Barco1,Barco2)
+  a=K[0]*K[0]+K[1]*K[1]
+  b=2*((Barco1[1]-Barco2[1])*K[0]+(Barco1[2]-Barco2[2])*K[1])
+
+  #print(K)
+  #print(a,b)
+  (day, month, year)=getDMY(date)
+  lastDay=maxDays(month)
+  
+  #obtengo un candidato para el dia de distancia minima (junto a los extremos) y lo aproximo al entero mas cercano
+  if a!=0:
+    T=-b/(2*a)
+    Tfloor=int(T)
+    Tceil=Tfloor+1
+    #print(T,Tfloor,Tceil)
+    if T-Tfloor<=Tceil-T:
+      T=Tfloor
+    else:
+      T=Tceil
+
+  #obtengo los tres candidatos a distancia minima
+  distInit=CalcDist(Barco1,Barco2,K,0)
+  distFin=CalcDist(Barco1,Barco2,K,lastDay)
+  if a!=0:
+    distT=CalcDist(Barco1,Barco2,K,T)
+
+  #print(distInit,distFin,distT)
+  
+  #determino cual es la distancia minima de las tres y la devuelvo
+  if a!=0:
+    if distInit<=distFin:
+      if T>1 and T<lastDay:
+        if distT<=distInit:
+          dist=distT
+          day=T
+        else:
+          dist=distInit
+          day=1
+      else:
+        dist=distInit
+        day=1
+    else:
+      if T>1 and T<lastDay:
+        if distT<=distFin:
+          dist=distT
+          day=T
+        else:
+          dist=distFin
+          day=lastDay
+      else:
+        dist=distFin
+        day=lastDay
+    return(dist,day)
+  else:
+    if distInit<distFin:
+      dist=distInit
+      day=1
+    elif distInit>distFin:
+      dist=distFin
+      day=lastDay
+    else:
+      dist=distFin
+      day=lastDay
+      return(dist,day,"paralelos")
+    return(dist,day)
+#---------------------------------------------------------------------------------
+def colisiones(flota):
+  n=flota.size
+  m=len(flota)
+  date=flota.date
+  
+  Bx = Array(n, tuple()) # Barcos ordenados segun x
+  k = 0
+  for i in range(m):
+    if flota[i] != None:
+      boat = flota[i][1]
+      Bx[k] = (boat[0],boat[1],boat[2],boat[3])
+    k=k+1
+  # ordenamos los barcos segun x y segun y (ascendente)
+  mergesortMOD(Bx,'x')
+  
+  #for i in range(20):
+  #  print(Bx[i])
+  #print("------------------------------------------------------------")
+  
+  lista=mll.LinkedList()
+  #para cada barco del arreglo
+  for i in range(n):
+    #obtengo el rango de riesgo y agrego a una lista los pares de barcos sospechosos
+    lim=Limites(Bx[i],date)
+    #print(lim)
+    candidatos(Bx,Bx[i],lim,i,lista)
+  #print("termine candidatos")
+
+  #Cur=lista.head
+  #while Cur!=None:
+  #  print(Cur.value)
+  #  Cur=Cur.nextNode
+  #print("")
+  #print("------------------------------------------------------------")
+  
+  Resultado=mll.LinkedList()
+  Cur=lista.head
+  while Cur!=None:
+    #viajando por la lista obtengo la distancia minima de cada par
+    #de entrar en riesgo de colision, se agrega a la lista resultado, junto
+    #a la fecha del incidente
+    Temp=obtainMinDist(Cur.value[0],Cur.value[1],date)
+    if Temp[0]==1:
+      if len(Temp)!=3:
+        mll.add(Resultado,(Cur.value[0],Cur.value[1],Temp[1]))
+      else:
+        mll.add(Resultado,(Cur.value[0],Cur.value[1],Temp[1],"el par de barcos estuvo en riesgo de colision todo el mes por viajar en paralelo"))
+    Cur=Cur.nextNode
+
+  #Cur=Resultado.head
+  #while Cur!=None:
+  #  print(Cur.value)
+  #  Cur=Cur.nextNode
+  #print("")
+  
+  return(mergesortListasMOD(Resultado,2))
+#---------------------------------------------------------------------------------
+def candidatos(Flota,Barco,Lims,Cont,Lista):
+  #obtengo la lista de candidatos a par en riesgo de colision
+  
+  lenFlota=len(Flota)
+  mid=lenFlota//2
+  CurBarco=Flota[mid]
+  #busco el barco mas cercano en x al x final del barco elegido
+
+  k=ObtainStartingPoint(Flota,Lims[2])
+
+  q=k-1
+  if q>=0:
+    #me vuelvo en el arreglo hasta alcanzar aquellos fuera de riesgo
+    while Flota[q][1]>=Lims[0][0]:
+      if q>Cont:
+        #si tambien estan en zona de riesgo en y, los agrego a la lista
+        if Flota[q][2]>=Lims[1][0] and Flota[q][2]<=Lims[1][1]:
+          #print(Barco,Flota[q])
+          mll.add(Lista,(Barco,Flota[q]))
+      q=q-1
+      if q<=0:
+        break
+  q=k+1
+  if q<=lenFlota-1:
+    #avanzo en el arreglo hasta alcanzar aquellos fuera de riesgo
+    while Flota[q][1]<=Lims[0][1]:
+      if q>Cont:
+        #si tambien estan en zona de riesgo en y, los agrego a la lista
+        if Flota[q][2]>=Lims[1][0] and Flota[q][2]<=Lims[1][1]:
+          #print(Barco,Flota[q])
+          mll.add(Lista,(Barco,Flota[q]))
+      q=q+1
+      if q>=lenFlota:
+        break
+  #print("------------------------------------------------------------")
+#---------------------------------------------------------------------------------
+def ObtainStartingPoint(Flota,PosBus):
+  #obtengo la posicion desde la que empiezo a seleccion de candidatos
+  lenFlota=len(Flota)
+  mid=lenFlota//2
+  CurBarco=Flota[mid]
+  
+  k=mid
+  found=False
+  prevK=lenFlota
+  while found==False:
+    #si la posicion final del barco en X coincide con el X de otro Barco
+    #if k!=prevK:
+    #  print("posX:",Flota[k][1],"objX:",PosBus[0],"k:",k,"mid:",mid)
+    #prevK=k
+    if Flota[k][1]==PosBus[0]:
+      found=True
+    else:
+      #si pos final X del barco es mayor al X del barco actual
+      if Flota[k][1]<PosBus[0]:
+        #si llegue al final de la lista devuelvo ese X
+        if k==lenFlota-1:
+          found=True
+        else:
+          #si el X del siguiente barco es menor o igual al Barco seleccionado, entonces encontre el X mas cercano a la pos final
+          if Flota[k+1][1]>=PosBus[0]:
+            found=True
+          else:
+            #si no, avanzo el x
+            if mid>1:
+              k=k+mid//2
+            else:
+              k=k+1
+      #si pos final X del barco es menor al X del barco actual
+      else:
+        #si llegue al principio de la lista devuelvo ese X
+        if k==0:
+          found=True
+        else:
+          #si el X del siguiente barco es mayor o igual al Barco seleccionado, entonces encontre el X mas cercano a la pos final
+          if Flota[k-1][1]<=PosBus[0]:
+            k=k-1
+            found=True
+          else:
+            #si no, retrocedo el x
+            if mid>1:
+              k=k-mid//2
+            else:
+              k=k-1
+    if mid>1:
+      mid=mid//2
+    #print(k)
+  #print("k:",k,"barco",Flota[k])
+  return(k)
+#---------------------------------------------------------------------------------  
+def Limites(Barco,date):
+  #obtengo los limites del rango de alerta + la posicion final del barco
+  Dir=DirIntFormat(Barco[3])
+  (d,month,y)=getDMY(date)
+  lastDay=maxDays(month)
+  finalPos=(Barco[1]+Dir[0]*lastDay,Barco[2]+Dir[1]*lastDay)
+  
+  cor=Array(3,tuple())
+  cor[0]=(finalPos[0]-lastDay-1,finalPos[0]+lastDay+1)
+  cor[1]=(finalPos[1]-lastDay-1,finalPos[1]+lastDay+1)
+  cor[2]=finalPos
+  #formato: ((limite x menor, limite x mayor),(limite y menor, limite y mayor),(posicion x final,posicion y final))
+  return(cor)
+
+#print(obtainMinDist(("B1",-15,13,"NE"),("B2",18,-11,"SE"),"01/05/2022"))
+#print(obtainMinDist(("B1",-1,0,"NE"),("B2",5,1,"NW"),"01/05/2022"))
+#print(Limites(("B1",-15,13,"NE"),"01/05/2022"))
 
 #---------------------------------------------------------------------------------
 # Merge Sort Modificado para ordenar barcos según coordenada x o y 
@@ -347,7 +630,59 @@ def mergesortMOD(L, coordinate):
       L[k] = Right[j]
       j = j + 1
       k = k + 1
+#---------------------------------------------------------------------------------
+# Merge Sort Modificado para ordenar listas según enteros en la posicion pos
+ def mergesortListasMOD(L,pos):
+  Lar=mll.length(L)
+  Med=int(Lar/2)
 
+  if Lar<=1:
+    return(L)
+
+  left=mll.LinkedList()
+  right=mll.LinkedList()
+
+  Cur=L.head
+  for i in range(Lar):
+    if i<Med:
+      mll.add(left,Cur.value)
+    else:
+      mll.add(right,Cur.value)
+    Cur=Cur.nextNode
+
+  left=mergesortListasMOD(left,pos)
+  right=mergesortListasMOD(right,pos)
+
+  L=merge(left,right,pos)
+  return (L)
+
+def merge(left,right,pos):
+  mergedList=mll.LinkedList()
+
+  CurL=left.head
+  CurR=right.head
+
+  while CurL!=None and CurR!=None:
+    if CurL.value[pos] <= CurR.value[pos]:
+      SE.push(mergedList,SE.pop(left))
+      CurL=left.head
+    else:
+      SE.push(mergedList,SE.pop(right))
+      CurR=right.head
+
+  while CurL!=None:
+    SE.push(mergedList,SE.pop(left))
+    CurL=left.head
+  while CurR!=None:
+    SE.push(mergedList,SE.pop(right))
+    CurR=right.head
+  
+  Cur=mergedList.head
+  mll.inverse(mergedList)
+
+  return(mergedList)
+     
+ 
 "Funciones para calcular la distancia"
 "---------------------------------------------------------------------------------"
 #calcula la distancia entre dos barcos cuya posición desconocemos
@@ -374,6 +709,10 @@ def getDistance(b1, b2, date):
 # Dado dos barcos A y B (nombre, coordenada x, coordenada y, direccion) calcula su distancia 
 def dist(A, B):
   return math.sqrt(((A[1] - B[1])**2)+((A[2] - B[2])**2))
+#---------------------------------------------------------------------------------
+# Dados dos barcos b1 y b2, junto a su relacion de movimiento y el dia en el mes. calcula su distancia
+def CalcDist(b1,b2,K,T):
+  return(math.sqrt((b1[1]-b2[1]+K[0]*T)*(b1[1]-b2[1]+K[0]*T)+(b1[2]-b2[2]+K[1]*T)*(b1[2]-b2[2]+K[1]*T)))
 
 
 
