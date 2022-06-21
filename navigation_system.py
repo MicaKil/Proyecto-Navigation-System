@@ -62,7 +62,7 @@ def closer(date):
 def collision(): 
   with open('tabla_flota.txt', 'rb') as f: #deserializacion
     flota = pickle.load(f)
-  collisionList = aux.colisiones(flota, day)
+  collisionList = aux.colisiones(flota)
   Cur=collisionList.head
   while Cur!=None:
     print ("El día %s, los barcos %d y %d estuvieron en riesgo de colisión" %(Cur.value[2],Cur.value[0][0],Cur.value[1][0]))
