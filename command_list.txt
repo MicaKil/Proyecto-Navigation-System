@@ -7,28 +7,14 @@ desde mi desktop
 *create:*
 ----------------------------------------------------------------------
 
-10 barcos:
 python navigation_system.py -create C:\Users\micae\Desktop\flota10.txt
-
-20 barcos
 python navigation_system.py -create C:\Users\micae\Desktop\flota20.txt
-
-21 barcos
 python navigation_system.py -create C:\Users\micae\Desktop\flota21.txt
-
-22 barcos
 python navigation_system.py -create C:\Users\micae\Desktop\flota22.txt
-
-25 barcos
 python navigation_system.py -create C:\Users\micae\Desktop\flota25.txt
-
-30 barcos
 python navigation_system.py -create C:\Users\micae\Desktop\flota30.txt
-
-31 barcos
 python navigation_system.py -create C:\Users\micae\Desktop\flota31.txt
-
-100 barcos
+python navigation_system.py -create C:\Users\micae\Desktop\flota32.txt
 python navigation_system.py -create C:\Users\micae\Desktop\flota100.txt
 
 *search*
@@ -100,6 +86,10 @@ RTA: (falta verificar si hay más)
 1000 barcos
 RTA: (falta verificar si hay más)
 (b266, b249, 1.4142135623730951)
+
+*collision*
+----------------------------------------------------------------------
+python navigation_system.py -collision
 
 comandos  con error:
 ----------------------------------------------------------------------
