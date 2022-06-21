@@ -499,7 +499,7 @@ def candidatos(Flota,Barco,Lims,Cont,Lista):
         #si tambien estan en zona de riesgo en y, los agrego a la lista
         if Flota[q][2]>=Lims[1][0] and Flota[q][2]<=Lims[1][1]:
           #print(Barco,Flota[q])
-          if Barco[0]!=Flota[0]:
+          if Barco[0]!=Flota[q][0]:
             mll.add(Lista,(Barco,Flota[q]))
       q=q-1
       if q<=0:
@@ -512,7 +512,7 @@ def candidatos(Flota,Barco,Lims,Cont,Lista):
         #si tambien estan en zona de riesgo en y, los agrego a la lista
         if Flota[q][2]>=Lims[1][0] and Flota[q][2]<=Lims[1][1]:
           #print(Barco,Flota[q])
-          if Barco[0]!=Flota[0]:
+          if Barco[0]!=Flota[q][0]:
             mll.add(Lista,(Barco,Flota[q]))
       q=q+1
       if q>=lenFlota:
