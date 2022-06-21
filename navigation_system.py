@@ -65,7 +65,10 @@ def collision():
   collisionList = aux.colisiones(flota)
   Cur=collisionList.head
   while Cur!=None:
-    print ("El día %s, los barcos %d y %d estuvieron en riesgo de colisión" %(Cur.value[2],Cur.value[0][0],Cur.value[1][0]))
+    if len(Cur.value)==3:
+      print ("El día %s, los barcos %d y %d estuvieron en riesgo de colisión" %(Cur.value[2],Cur.value[0][0],Cur.value[1][0]))
+    else:
+      print ("los barcos %d y %d viajaron en paralelo en riesgo de colision durante todo el mes" %(Cur.value[0][0],Cur.value[1][0])
     Cur=Cur.nextNode
   print("")
   return 
