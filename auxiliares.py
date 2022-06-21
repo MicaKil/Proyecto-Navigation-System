@@ -392,7 +392,7 @@ def obtainMinDist(Barco1,Barco2,date):
       if T>1 and T<lastDay:
         if distT<=distInit:
           dist=distT
-          day=T
+          day=T+1
         else:
           dist=distInit
           day=1
@@ -403,7 +403,7 @@ def obtainMinDist(Barco1,Barco2,date):
       if T>1 and T<lastDay:
         if distT<=distFin:
           dist=distT
-          day=T
+          day=T+1
         else:
           dist=distFin
           day=lastDay
