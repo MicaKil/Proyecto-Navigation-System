@@ -365,7 +365,7 @@ def obtainMinDist(Barco1,Barco2,date):
   #print(K)
   #print(a,b)
   (day, month, year)=getDMY(date)
-  lastDay=maxDays(month)
+  lastDay=maxDays(month)-1
   
   #obtengo un candidato para el dia de distancia minima (junto a los extremos) y lo aproximo al entero mas cercano
   if a!=0:
@@ -406,10 +406,10 @@ def obtainMinDist(Barco1,Barco2,date):
           day=T+1
         else:
           dist=distFin
-          day=lastDay
+          day=lastDay+1
       else:
         dist=distFin
-        day=lastDay
+        day=lastDay+1
     return(dist,day)
   else:
     if distInit<distFin:
@@ -417,10 +417,10 @@ def obtainMinDist(Barco1,Barco2,date):
       day=1
     elif distInit>distFin:
       dist=distFin
-      day=lastDay
+      day=lastDay+1
     else:
       dist=distFin
-      day=lastDay
+      day=lastDay+1
       return(dist,day,"paralelos")
     return(dist,day)
 #---------------------------------------------------------------------------------
@@ -466,7 +466,7 @@ def colisiones(flota):
     #de entrar en riesgo de colision, se agrega a la lista resultado, junto
     #a la fecha del incidente
     Temp=obtainMinDist(Cur.value[0],Cur.value[1],date)
-    if Temp[0]==1:
+    if Temp[0]<=1:
       if len(Temp)!=3:
         mll.add(Resultado,(Cur.value[0],Cur.value[1],Temp[1]))
       else:
