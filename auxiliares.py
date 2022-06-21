@@ -633,7 +633,7 @@ def mergesortMOD(L, coordinate):
       k = k + 1
 #---------------------------------------------------------------------------------
 # Merge Sort Modificado para ordenar listas según enteros en la posicion pos
- def mergesortListasMOD(L,pos):
+def mergesortListasMOD(L,pos):
   Lar=mll.length(L)
   Med=int(Lar/2)
 
