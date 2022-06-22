@@ -13,9 +13,7 @@ python navigation_system.py -create C:\Users\micae\Desktop\flota21.txt
 python navigation_system.py -create C:\Users\micae\Desktop\flota22.txt
 python navigation_system.py -create C:\Users\micae\Desktop\flota25.txt
 python navigation_system.py -create C:\Users\micae\Desktop\flota30.txt
-python navigation_system.py -create C:\Users\micae\Desktop\flota31.txt
 python navigation_system.py -create C:\Users\micae\Desktop\flota32.txt
-python navigation_system.py -create C:\Users\micae\Desktop\flota100.txt
 
 *search*
 ----------------------------------------------------------------------
@@ -74,7 +72,7 @@ RTA CORRECTA:
 (b23, b24, 1.0)
 (b22, b6, 1.0)
 
-31 barcos
+32 barcos
 RTA CORRECTA:
 (b0, b31, 0.0)
 
@@ -95,4 +93,10 @@ comandos  con error:
 ----------------------------------------------------------------------
 python navigation_system.py -crea C:\Users\micae\Desktop\flota.txt
 
-    
+
+PARA REPLIT
+======================================================================
+
+*create:*
+----------------------------------------------------------------------
+python navigation_system.py -create flota.txt

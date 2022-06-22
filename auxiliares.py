@@ -121,8 +121,9 @@ def getInfo(string):
   str_val = ''
   e = mll.LinkedList()
   j = 0
-  for i in range(1,len(string)):
-    if string[i] != ',' and string[i] != ')':
+  n = len(string)
+  for i in range(n):
+    if i != n - 1 and string[i] != ' ':
       str_val += string[i]
     else:
       if j == 1 or j == 2:
@@ -748,7 +749,7 @@ def create_flotatxt(n):
       coor = (random.randrange(-n,n),random.randrange(-n,n))
     coor_flota.append(coor)
 
-    flota_m.append("(b"+str(num)+","+str(coor[0])+","+str(coor[1])+","+direccion[random.randrange(8)]+")")
+    flota_m.append("b"+str(num)+" "+str(coor[0])+" "+str(coor[1])+" "+direccion[random.randrange(8)])
 
   with open('flota.txt', 'w') as f: #si no exite el archivo flota lo crea
     f.write('\n'.join(flota_m))
@@ -764,7 +765,21 @@ def random_month():
     mes = str(mes)
   return "01/"+ mes + "/2022"
 
-    
+#---------------------------------------------------------------------------------
+def modify_flotatxt(flotatxt):
+  with open(flotatxt,'r') as f:
+    flota = f.readlines()
+  
+  for i in range(1,len(flota)):
+    s = ''
+    for j in range(0,len(flota[i])):
+      if flota[i][j] != ',' and flota[i][j] != '(' and flota[i][j] != ')':
+        s += flota[i][j]
+      elif flota[i][j] == ',':
+        s += ' '
+    flota[i] = s
+  with open(flotatxt, 'w+') as f: #si no exite el archivo flota lo crea
+    f.write('\n'.join(flota))
 "---------------------------------------------------------------------------------"
 "FUNCIONES PICKLE"
 
