@@ -8,9 +8,8 @@ import math
 
 def insert(D,key,value,m): #O(2n)
     m = len(D)
-
     if type(key) == str:
-        keyval = string_hash(key)
+        keyval = string_hash(key, m)
     else:
         keyval = key
 
@@ -19,7 +18,7 @@ def insert(D,key,value,m): #O(2n)
     h1 = keyval % m
     h = doublehash(D, h1, keyval, m)
     if h == None:
-        #print("No se pudo insertar con double hashing", key, keyval)
+        #print("No se pudo insertar con double hashing", key, keyval, h1)
         h = linearprob(D, h1, m)
         #print("Insertado en: ", h)
     if h == None:
@@ -30,28 +29,14 @@ def insert(D,key,value,m): #O(2n)
 
 #-----------------------------------------------------------------
 
-# doble hashea hasta encontrar una casilla vacia
-def doublehash(D, h1, keyval, m):
-    m1 = m - 1
-    h2 = 1 + (keyval % m1)
-    i = 0
-    end = min(50, m)
-    while i < end:
-        h = (h1 + i*h2) % m
-        if D[h] == None:
-            return h
-        i += 1
-    return None
-
-#-----------------------------------------------------------------
-
-def string_hash(s):
+def string_hash(s, m):
     n = len(s)
     p = 131 # el primo despues de 128 (128 por los caracteres en el ascii)
     keyval = 0
     for i in range(n):
         #keyval  += (ord(s[i]))
-        keyval  += (ord(s[i]) - ord("a") + 1) * (p**(n - i))
+        keyval  += (abs(ord(s[i]) - ord("a")) + 1) * (p**(n - i))
+
     return keyval
     
 #-----------------------------------------------------------------
@@ -61,10 +46,31 @@ def linearprob(D, h1, m):
     while i < m:
         h = (h1 + i) % m
         if D[h] == None: 
+            #print('linear:', i)
             return h 
         i += 1
     return None
 
+#-----------------------------------------------------------------
+
+# doble hashea hasta encontrar una casilla vacia
+def doublehash(D, h1, keyval, m):
+    m1 = m - 1
+    #p = prev_prime(m)
+    #h2 = p - (keyval % p)
+    h2 = 1 + (keyval % m1)
+    i = 0
+    #end = min(50, m)
+    while i < m:
+        h = (h1 + i*h2) % m
+        if D[h] == None:
+            #print('double:', i, h1, h2)
+            return h
+        if i > 0 and h == h1: #si se repite nuevamente la secuencia...
+            #print('double:', i, h, h1, h2)
+            return None 
+        i += 1
+    return None
 "----------------------------------------------------------------"
 
 def search(D,key): #O(n)
@@ -88,11 +94,13 @@ def doublehashSearch(D, h1, keyval, key, m):
     m1 = m - 1
     h2 = 1 + (keyval % m1)
     i = 0
-    end = min(50, m)
-    while i < end:
+    #end = min(50, m)
+    while i < m:
         h = (h1 + i*h2) % m
         if D[h] != None and D[h][0] == key:
-            return D[h][1] 
+            return D[h][1]
+        if i > 0 and h == h1: #si se repite nuevamente la secuencia...
+            return None 
         i += 1
     return None
 
@@ -105,29 +113,6 @@ def linearprobSearch(D, h1, key, m):
             return D[h][1] 
         i += 1
     return None
-
-"----------------------------------------------------------------"
-# "No lo testee porque de momento no lo vamos a usar"
-# def delete(D,key):
-#     m = len(D)
-#     if type(key) == str:
-#         keyval = string_hash(key)
-#     else:
-#         keyval = key
-#     h1 = keyval % m
-#     m1 = m - 1
-#     h2 = 1 + (keyval % m1)
-#     i = 0
-#     while i < m:
-#         h = (h1 + i*h2) % m
-#         if D[h] != None and D[h][0] == key: 
-#             val = D[h][1]
-#             D[h] = copy.deepcopy(None)
-#             return val
-#         else:
-#             i += 1
-#     #O(100*len(D))
-#     return None
 
 "----------------------------------------------------------------"
 def printDic(D):
@@ -143,6 +128,11 @@ def printDic(D):
 def next_prime(n):
   while is_prime(n) == False:
     n += 1
+  return n
+
+def prev_prime(n):
+  while is_prime(n) == False and n > 0:
+    n -= 1
   return n
 
 def is_prime(n):

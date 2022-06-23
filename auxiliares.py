@@ -99,15 +99,15 @@ def verifyDate(date, tabla):
 #crea una tabla hash a partir del txt
 def create_table(flota):
   n = len(flota) 
-  l = next_prime(1.5*n) #el tamaño de la tabla es un primo mayor a 1,5 * len(flota_list)
-  D = Array(l,tuple())
+  l = next_prime(1.25*n) #el tamaño de la tabla es un primo mayor a 1,25 * len(flota_list). Más de 1.25 no cambia mucho.
+  D = Array(l, tuple())
 
   D.date = flota[0] #guardamos la fecha inicial como atributo de la tabla
   D.size = n - 1 #guardamos el número de embarcaciones
 
   for i in range(1,n):
     t = getInfo(flota[i])
-    if t[3] != "N" and t[3] != "S" and t[3] != "E" and t[3] != "W" and t[3] != "NE" and t[3] != "NW" and t[3] != "SE" and t[3] != "SW":
+    if t[3] != "N" and t[3] != "S" and t[3] != "E" and t[3] != "W" and t[3] != "NE" and t[3] != "NW" and t[3] != "SE" and t[3] != "SW":      
       print("Error. No es una dirección posible.")
       return None
     t_insert = d.insert(D,t[0], t, l)
@@ -128,6 +128,8 @@ def getInfo(string):
     else:
       if j == 1 or j == 2:
         str_val = int(str_val)
+      if i == n - 1 and string[i] != '\n':
+        str_val += string[i]
       mll.insert(e,str_val,j) #O(4)
       j += 1
       str_val = ''
@@ -765,21 +767,6 @@ def random_month():
     mes = str(mes)
   return "01/"+ mes + "/2022"
 
-#---------------------------------------------------------------------------------
-def modify_flotatxt(flotatxt):
-  with open(flotatxt,'r') as f:
-    flota = f.readlines()
-  
-  for i in range(1,len(flota)):
-    s = ''
-    for j in range(0,len(flota[i])):
-      if flota[i][j] != ',' and flota[i][j] != '(' and flota[i][j] != ')':
-        s += flota[i][j]
-      elif flota[i][j] == ',':
-        s += ' '
-    flota[i] = s
-  with open(flotatxt, 'w+') as f: #si no exite el archivo flota lo crea
-    f.write('\n'.join(flota))
 "---------------------------------------------------------------------------------"
 "FUNCIONES PICKLE"
 
