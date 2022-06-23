@@ -107,7 +107,7 @@ def create_table(flota):
 
   for i in range(1,n):
     t = getInfo(flota[i])
-    if t[3] != "N" and t[3] != "S" and t[3] != "E" and t[3] != "W" and t[3] != "NE" and t[3] != "NW" and t[3] != "SE" and t[3] != "SW":
+    if t[3] != "N" and t[3] != "S" and t[3] != "E" and t[3] != "W" and t[3] != "NE" and t[3] != "NW" and t[3] != "SE" and t[3] != "SW":      
       print("Error. No es una dirección posible.")
       return None
     t_insert = d.insert(D,t[0], t, l)
@@ -128,6 +128,8 @@ def getInfo(string):
     else:
       if j == 1 or j == 2:
         str_val = int(str_val)
+      if i == n - 1 and string[i] != '\n':
+        str_val += string[i]
       mll.insert(e,str_val,j) #O(4)
       j += 1
       str_val = ''

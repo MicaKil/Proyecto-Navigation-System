@@ -7,13 +7,12 @@ desde mi desktop
 *create:*
 ----------------------------------------------------------------------
 
-python navigation_system.py -create C:\Users\micae\Desktop\flota10.txt
-python navigation_system.py -create C:\Users\micae\Desktop\flota20.txt
-python navigation_system.py -create C:\Users\micae\Desktop\flota21.txt
-python navigation_system.py -create C:\Users\micae\Desktop\flota22.txt
-python navigation_system.py -create C:\Users\micae\Desktop\flota25.txt
-python navigation_system.py -create C:\Users\micae\Desktop\flota30.txt
-python navigation_system.py -create C:\Users\micae\Desktop\flota32.txt
+python navigation_system.py -create C:\Users\micae\Desktop\TXTFILES\flota10.txt
+python navigation_system.py -create C:\Users\micae\Desktop\TXTFILES\flota21.txt
+python navigation_system.py -create C:\Users\micae\Desktop\TXTFILES\flota22.txt
+python navigation_system.py -create C:\Users\micae\Desktop\TXTFILES\flota25.txt
+python navigation_system.py -create C:\Users\micae\Desktop\TXTFILES\flota30.txt
+python navigation_system.py -create C:\Users\micae\Desktop\TXTFILES\flota32.txt
 
 *search*
 ----------------------------------------------------------------------
