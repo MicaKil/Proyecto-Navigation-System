@@ -7,7 +7,8 @@ desde mi desktop
 *create:*
 ----------------------------------------------------------------------
 
-python navigation_system.py -create C:\Users\micae\Desktop\TXTFILES\flotaFINAL.txt
+python navigation_system.py -create C:\Users\micae\Desktop\TXTFILES\flotaB.txt
+python navigation_system.py -create C:\Users\micae\Desktop\TXTFILES\flotaR.txt
 
 *search*
 ----------------------------------------------------------------------
@@ -24,13 +25,6 @@ RTAS closer
 
 20 barcos:
 (b17, b9, 2.0)
-
-20 barcos:
-(b21, b20, 1.0)
-
-22 barcos
-(b21, b20, 1.0)
-(b6, b22, 1.0)
 
 25 barcos
 RTA CORRECTA:
@@ -54,22 +48,15 @@ RTA CORRECTA:
 RTA CORRECTA:
 (b0, b31, 0.0)
 
-100 barcos
-RTA: (falta verificar si hay más)
-(b63, b37, 1.0)
-
-
-1000 barcos
-RTA: (falta verificar si hay más)
-(b266, b249, 1.4142135623730951)
 
 *collision*
 ----------------------------------------------------------------------
 python navigation_system.py -collision
 
-comandos  con error:
+*collision ranking*
 ----------------------------------------------------------------------
-python navigation_system.py -crea C:\Users\micae\Desktop\flota.txt
+python navigation_system.py -collision_ranking 1
+
 
 
 PARA REPLIT

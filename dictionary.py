@@ -9,7 +9,7 @@ import math
 def insert(D,key,value,m): #O(2n)
     m = len(D)
     if type(key) == str:
-        keyval = string_hash(key, m)
+        keyval = string_hash(key)
     else:
         keyval = key
 
@@ -29,7 +29,7 @@ def insert(D,key,value,m): #O(2n)
 
 #-----------------------------------------------------------------
 
-def string_hash(s, m):
+def string_hash(s):
     n = len(s)
     p = 131 # el primo despues de 128 (128 por los caracteres en el ascii)
     keyval = 0
