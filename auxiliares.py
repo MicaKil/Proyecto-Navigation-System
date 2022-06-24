@@ -4,6 +4,7 @@ import dictionary as d
 import mylinkedlist_mica as mll
 import myarray_mica as a
 import Stack_Emmanuel as SE
+import mypriorityqueue_mica as pq
 import pickle
 import math
 
@@ -18,7 +19,7 @@ def getDMY(date):
   s = ''
   k = 0
   for i in range(n):
-    if date[i] != '/':
+    if date[i] != '/' and date[i] != '\n':
       s += date[i]
     if date[i] == '/' or i == n-1:
       if k == 0:
@@ -308,7 +309,10 @@ def addToBPairs(BPairs, bp, d):
       mll.add(BPairs, cur.value)
       cur = cur.nextNode
   return BPairs
-#---------------------------------------------------------------------------------
+
+"Colission"
+"---------------------------------------------------------------------------------"
+
 #obtiene la direccion en un par (X,Y)
 def DirIntFormat(Dir):
   if len(Dir)==1:
@@ -334,6 +338,7 @@ def DirIntFormat(Dir):
     else:
       X=1
   return(X,Y)
+
 #---------------------------------------------------------------------------------
 #utilizando las posiciones inicial y las direcciones de los barcos, obtengo la relacion entre las distancias en cada eje
 def obtainRelationDir(Barco1,Barco2):
@@ -357,6 +362,7 @@ def obtainRelationDir(Barco1,Barco2):
     RelDirY=abs(RelDirY)
 
   return(RelDirX,RelDirY)
+  
 #---------------------------------------------------------------------------------
 #obtengo la distancia minima a lo largo del mes para un par de barcos
 def obtainMinDist(Barco1,Barco2,date):
@@ -426,6 +432,7 @@ def obtainMinDist(Barco1,Barco2,date):
       day=lastDay+1
       return(dist,day,"paralelos")
     return(dist,day)
+
 #---------------------------------------------------------------------------------
 def colisiones(flota):
   n=flota.size
@@ -483,6 +490,7 @@ def colisiones(flota):
   #print("")
   
   return(mergesortListasMOD(Resultado,2))
+
 #---------------------------------------------------------------------------------
 def candidatos(Flota,Barco,Lims,Cont,Lista):
   #obtengo la lista de candidatos a par en riesgo de colision
@@ -521,6 +529,7 @@ def candidatos(Flota,Barco,Lims,Cont,Lista):
       if q>=lenFlota:
         break
   #print("------------------------------------------------------------")
+
 #---------------------------------------------------------------------------------
 def ObtainStartingPoint(Flota,PosBus):
   #obtengo la posicion desde la que empiezo a seleccion de candidatos
@@ -575,6 +584,7 @@ def ObtainStartingPoint(Flota,PosBus):
     #print(k)
   #print("k:",k,"barco",Flota[k])
   return(k)
+
 #---------------------------------------------------------------------------------  
 def Limites(Barco,date):
   #obtengo los limites del rango de alerta + la posicion final del barco
@@ -594,7 +604,8 @@ def Limites(Barco,date):
 #print(obtainMinDist(("B1",-1,0,"NE"),("B2",5,1,"NW"),"01/05/2022"))
 #print(Limites(("B1",-15,13,"NE"),"01/05/2022"))
 
-#---------------------------------------------------------------------------------
+"MERGE SORT MODIFICAIONES"
+'---------------------------------------------------------------------------------'
 # Merge Sort Modificado para ordenar barcos según coordenada x o y 
 # L es un arreglo de tuplas (nombre, pos inicial en x, pos inicial en y, dirección) y coordinate puede ser 'x' o 'y'
 def mergesortMOD(L, coordinate): 
@@ -636,6 +647,7 @@ def mergesortMOD(L, coordinate):
       L[k] = Right[j]
       j = j + 1
       k = k + 1
+
 #---------------------------------------------------------------------------------
 # Merge Sort Modificado para ordenar listas según enteros en la posicion pos
 def mergesortListasMOD(L,pos):
@@ -688,7 +700,157 @@ def merge(left,right,pos):
 
   return(mergedList)
      
- 
+"Ranking"
+"---------------------------------------------------------------------------------"
+
+def ranking(flota, day):
+  n = flota.size #número de embarcaciones
+  m = len(flota)
+
+  Bx = Array(n, tuple()) # Barcos ordenados segun x
+  By = Array(n, tuple()) # Barcos ordenados segun y
+
+  k = 0
+  for i in range(m):
+    if flota[i] != None:
+      boat = flota[i][1]
+      b_pos = getPos(day,boat) #calculamos la posición del barco en day
+      Bx[k] = (boat[0],b_pos[0],b_pos[1],boat[3])
+      By[k] = (boat[0],b_pos[0],b_pos[1],boat[3])
+      k += 1
+  # ordenamos los barcos segun x y segun y (ascendente)
+  mergesortMOD(Bx,'x')
+  mergesortMOD(By,'y')
+  rank = pq.PriorityQueue() #max priority queue -> se encolan los pares de barcos con mayor distancia al principio
+  return rankingR(Bx, By, rank)
+
+#---------------------------------------------------------------------------------
+def rankingR(Bx, By, rank):
+  lenBx = len(Bx)
+  if lenBx <= 3:
+    return rankingBF(Bx, rank) #O(1)
+  else:
+    mid = lenBx // 2
+    mid_x = Bx[mid][1] #coordenada x media
+    #separamos los barcos en dos arreglos segun su posicion respecto a mid_x
+    BxW = Array(mid, tuple()) #Barcos ordenados segun x al Oeste de mid_x
+    BxE = Array(lenBx - mid, tuple()) #Barcos ordenados segun x al Este de mid_x
+    for i in range(mid):
+      BxW[i] = Bx[i]
+    k = 0
+    for i in range(mid,lenBx):
+      BxE[k] = Bx[i]
+      k += 1
+    #separamos los barcos en dos arreglos segun su posicion respecto a mid_x
+    ByW = Array(lenBx, tuple()) #Barcos ordenados segun x al Oeste de mid_x
+    ByE = Array(lenBx, tuple()) #Barcos ordenados segun x al Este de mid_x
+    iW = 0
+    iE = 0
+    lenBy = len(By)
+    for i in range(lenBy):
+      if By[i][1] < mid_x:
+        ByW[iW] = By[i]
+        iW += 1
+      else:
+        ByE[iE] = By[i]
+        iE += 1
+    # al usar un arreglo puede haber espaciones en None
+    ByW = a.createSet(ByW) # los eliminamos
+    ByE = a.createSet(ByE) # O(n)
+    # buscamos la distancia más corta delta
+    (deltaW, boatPW) = rankingR(BxW, ByW, rank) 
+    (deltaE, boatPE) = rankingR(BxE, ByE, rank)
+
+    bp = mll.LinkedList()
+    if deltaW < deltaE:
+      delta = deltaW
+      cur = boatPW.head  
+      while cur != None:
+        mll.insert(bp, cur.value, mll.length(bp))
+        cur = cur.nextNode
+    else:
+      delta = deltaE
+      cur = boatPE.head
+      while cur != None:
+        mll.insert(bp, cur.value, mll.length(bp))
+        cur = cur.nextNode
+
+    # comparamos lo elementos en la banda delimitada por delta
+    band = Array(lenBy, tuple())
+    for i in range(lenBy):
+      if (mid_x - delta) <= By[i][1] <= (mid_x + delta):
+        band[i] = By[i]
+    band = a.createSet(band) 
+    lenBand = len(band)
+    # nos quedamos con la distancia más corta de esa banda
+    for i in range(lenBand): 
+      #end = min(i + 7, lenBand) # no sé cuantos elementos deberían haber en la banda
+      for j in range(i + 1, lenBand): 
+        addToRank(rank, band[i], band[j], delta)
+        delta = rank.head.value[2] #la cota superior la da el primer elemento de la cola
+    return (delta, rank) 
+
+#---------------------------------------------------------------------------------
+# calcula la distancia entre dos barcos por fuerza bruta
+# la complejidad es nC2 (combinatorio) entonces si n = 3, 3C2 = 3 y, por lo tanto, O(1)
+def rankingBF(B, rank):
+  if rank.head == None:
+    delta = 1e9
+  else:
+    delta = rank.head.value[2] #la menor distancia la da el primer elemento de la cola
+
+  n = len(B)
+  for i in range(n):
+    for j in range(i + 1, n):
+      addToRank(rank, B[i], B[j], delta)
+      delta = rank.head.value[2] #la cota superior la da el primer elemento de la cola
+  return (delta, rank)
+
+# Nota: delta no es necesariamente la mínima distancia entre dos barcos
+      # delta sería la mayor distancia (cota superior) entre un grupo de 5 pares de barcos
+
+#---------------------------------------------------------------------------------
+def addToRank(rank, b1, b2, delta):
+  d = dist(b1, b2)
+  if rank.head == None:
+    pq.enqueue_priority(rank, (b1[0], b2[0], d), d)
+  else:
+    if d > delta:
+      return rank
+    # si el elemento no se encuentra en la cola...
+    if (mll.search(rank, (b1[0], b2[0], d)), mll.search(rank, (b2[0], b1[0], d))) == (None,None):
+      if d == delta: # si la distancia es igual a delta 
+        pq.enqueue_priority(rank, (b1[0], b2[0], d), d)
+      else:
+        l = mll.length(rank)
+        if d < delta:
+          if l < 5 : # si la cola tiene menos de 5 elementos... 
+            pq.enqueue_priority(rank, (b1[0], b2[0], d), d) #se agrega el nuevo elemento 
+          else: # sino...
+            count = 0
+            cur = rank.head
+            old_delta = delta
+            # calcula que elementos debe eliminar
+            while cur != None and (l - count) >= 5:  
+              if cur.value[2] != old_delta:
+                old_delta = cur.value[2]
+              count += 1
+              cur = cur.nextNode
+            while cur != None and cur.value[2] == old_delta:
+              count += 1
+              cur = cur.nextNode
+            if l - count >= 4:
+              while count > 0:
+                pq.dequeue_priority(rank)
+                count -= 1
+            else:
+              while rank.head != None and rank.head.value[2] != old_delta:
+                pq.dequeue_priority(rank)
+            pq.enqueue_priority(rank, (b1[0], b2[0], d), d)
+  return rank
+
+# Operaciones con PriorityQueue tiene aproximadamente O(1) ya que van a haber 5 elementos
+
 "Funciones para calcular la distancia"
 "---------------------------------------------------------------------------------"
 #calcula la distancia entre dos barcos cuya posición desconocemos
@@ -715,14 +877,11 @@ def getDistance(b1, b2, date):
 # Dado dos barcos A y B (nombre, coordenada x, coordenada y, direccion) calcula su distancia 
 def dist(A, B):
   return math.sqrt(((A[1] - B[1])**2)+((A[2] - B[2])**2))
+
 #---------------------------------------------------------------------------------
 # Dados dos barcos b1 y b2, junto a su relacion de movimiento y el dia en el mes. calcula su distancia
 def CalcDist(b1,b2,K,T):
   return(math.sqrt((b1[1]-b2[1]+K[0]*T)*(b1[1]-b2[1]+K[0]*T)+(b1[2]-b2[2]+K[1]*T)*(b1[2]-b2[2]+K[1]*T)))
-
-
-
-
 
 "================================================================================="
 "EXTRAS" 

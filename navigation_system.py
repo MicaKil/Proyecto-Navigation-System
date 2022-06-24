@@ -53,7 +53,7 @@ def closer(date):
     return None
   day = aux.getDMY(date)[0]
   closestPair = aux.closest(flota, day)
-  print ("La distancia mínima el día %s es %d entre los barcos:" %(day,closestPair[0]))
+  print ("La distancia mínima el día %s es %f entre los barcos:" %(day, closestPair[0]))
   mll.printv(closestPair[1])
   return 
 
@@ -76,9 +76,23 @@ def collision():
 "---------------------------------------------------------------------------------"
 #Devuelve un ranking (10) de las embarcaciones más cercanas entre sí.
 def collision_ranking(date):
+  with open('tabla_flota.txt', 'rb') as f: #deserializacion
+    flota = pickle.load(f)
+  # verificamos la fecha
+  if aux.verifyDate(date, flota) == False:
+    return None
+  day = aux.getDMY(date)[0]
+  rank = aux.ranking(flota, day)
+  lista_rank = mll.inverse(rank[1])
+  l = mll.length(lista_rank)
+  print("El día %s las %d embarcaciones más cercanas entre sí fueron:" %(day, 2*l))
+  cur = lista_rank.head
+  i = 1
+  while cur != None:
+    print("%d. %s y %s con una distancia de %f" %(i, cur.value[0], cur.value[1], cur.value[2]))
+    cur = cur.nextNode
+    i += 1
   return
-
-
 
 "================================================================================="
 "FUNCIONES SYS MODULE"
