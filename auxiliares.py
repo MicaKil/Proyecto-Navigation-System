@@ -784,8 +784,8 @@ def rankingR(Bx, By, rank):
     lenBand = len(band)
     # nos quedamos con la distancia más corta de esa banda
     for i in range(lenBand): 
-      #end = min(i + 7, lenBand) # no sé cuantos elementos deberían haber en la banda
-      for j in range(i + 1, lenBand): 
+      end = min(i + 7, lenBand) # no sé cuantos elementos deberían haber en la banda
+      for j in range(i + 1, end): 
         addToRank(rank, band[i], band[j], delta)
         delta = rank.head.value[2] #la cota superior la da el primer elemento de la cola
     return (delta, rank) 
@@ -849,7 +849,7 @@ def addToRank(rank, b1, b2, delta):
             pq.enqueue_priority(rank, (b1[0], b2[0], d), d)
   return rank
 
-# Operaciones con PriorityQueue tiene aproximadamente O(1) ya que van a haber 5 elementos
+# Operaciones con PriorityQueue tiene aproximadamente O(1) ya que van a haber 5 elementos aprox
 
 "Funciones para calcular la distancia"
 "---------------------------------------------------------------------------------"
