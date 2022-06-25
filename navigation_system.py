@@ -54,7 +54,10 @@ def closer(date):
   day = aux.getDMY(date)[0]
   closestPair = aux.closest(flota, day)
   print ("La distancia mínima el día %s es %f entre los barcos:" %(day, closestPair[0]))
-  mll.printv(closestPair[1])
+  cur = closestPair[1].head
+  while cur != None:
+    print("%s y %s" %(cur.value[0], cur.value[1]))
+    cur = cur.nextNode
   return 
 
 "---------------------------------------------------------------------------------"

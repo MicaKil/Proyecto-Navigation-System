@@ -200,16 +200,16 @@ def closest(flota, day):
   # ordenamos los barcos segun x y segun y (ascendente)
   mergesortMOD(Bx,'x')
   mergesortMOD(By,'y')
-  BoatPairs = mll.LinkedList()
+  BoatPairs = pq.PriorityQueue() # Min priority queue. Los pares con menor distancia tienen mayor prioridad.
   return closestR(Bx, By, BoatPairs)
 
 #---------------------------------------------------------------------------------
-def closestR(Bx, By, BPairs):
+def closestR(Bx, By, BoatPairs):
   lenBx = len(Bx)
   if lenBx <= 3:
-    return closestBF(Bx, BPairs) #O(1)
+    return closestBF(Bx, BoatPairs) #O(1)
   else:
-    mid = lenBx//2
+    mid = lenBx // 2
     mid_x = Bx[mid][1] #coordenada x media
     #separamos los barcos en dos arreglos segun su posicion respecto a mid_x
     BxW = Array(mid, tuple()) #Barcos ordenados segun x al Oeste de mid_x
@@ -237,22 +237,13 @@ def closestR(Bx, By, BPairs):
     ByW = a.createSet(ByW) # los eliminamos
     ByE = a.createSet(ByE) # O(n)
     # buscamos la distancia más corta delta
-    (deltaW, boatPW) = closestR(BxW, ByW, BPairs) 
-    (deltaE, boatPE) = closestR(BxE, ByE, BPairs)
+    deltaW = closestR(BxW, ByW, BoatPairs)
+    deltaE = closestR(BxE, ByE, BoatPairs)
 
-    bp = mll.LinkedList()
-    if deltaW < deltaE:
-      delta = deltaW
-      cur = boatPW.head 
-      while cur != None:
-        mll.insert(bp, cur.value, mll.length(bp))
-        cur = cur.nextNode
+    if deltaW[0] < deltaE[0]:
+      delta = deltaW[0]
     else:
-      delta = deltaE
-      cur = boatPE.head
-      while cur != None:
-        mll.insert(bp, cur.value, mll.length(bp))
-        cur = cur.nextNode
+      delta = deltaE[0]
 
     # comparamos lo elementos en la banda delimitada por delta
     band = Array(lenBy, tuple())
@@ -266,49 +257,39 @@ def closestR(Bx, By, BPairs):
       end = min(i + 7, lenBand)
       for j in range(i + 1, end): # pero está probado que este bucle corre en cuanto mucho 7 veces [Ver Cormen ;)]
         d = dist(band[i], band[j])
-        if d == delta and ((mll.search(bp, (band[i][0], band[j][0], d)), mll.search(bp, (band[j][0], band[i][0], d))) == (None, None)):
-          mll.add(bp, (band[i][0], band[j][0], d))
-        if d < delta:
-          delta = d
-          bp.head = None
-          mll.add(bp, (band[i][0], band[j][0], d))
-    addToBPairs(BPairs, bp, delta)
-    return (delta, BPairs) 
+        addToBoatPairs(BoatPairs, band[i],band[j], d)
+        if delta > BoatPairs.head.value[2]:
+          delta = BoatPairs.head.value[2]
+    return (delta, BoatPairs) 
 
 #---------------------------------------------------------------------------------
 # calcula la distancia entre dos barcos por fuerza bruta
 # la complejidad es nC2 (combinatorio) entonces si n = 3, 3C2 = 3 y, por lo tanto, O(1)
-def closestBF(B, BPairs):
-  min_dist = 1e9
-  bp = mll.LinkedList()
+def closestBF(B, BoatPairs):
+  if BoatPairs.head == None: #si no hay ningun par en la cola
+    min_dist = 1e9 #min es + infinito
+  else:
+    min_dist = BoatPairs.head.value[2] #min es la distancia del primer par en la cola (menor distancia encontrada hasta ahora)
   n = len(B)
   for i in range(n):
     for j in range(i + 1, n):
       d = dist(B[i],B[j])
-      if d == min_dist and ((mll.search(bp, (B[i][0], B[j][0], d)), mll.search(bp, (B[j][0], B[i][0], d))) == (None,None)): #O(1) en cuanto mucho hay tres elementos
-        mll.add(bp, (B[i][0], B[j][0], d))
-      if d < min_dist:
-        min_dist = d
-        bp.head = None
-        mll.add(bp, (B[i][0], B[j][0], d))  
-  addToBPairs(BPairs, bp, min_dist)
-  return (min_dist, BPairs)
+      addToBoatPairs(BoatPairs, B[i], B[j], d)
+      if min_dist > BoatPairs.head.value[2]: 
+        min_dist = BoatPairs.head.value[2]
+  return (min_dist, BoatPairs)
 
 #---------------------------------------------------------------------------------
-def addToBPairs(BPairs, bp, d):
-  if BPairs.head != None and BPairs.head.value[2] == d:
-    cur = bp.head
-    while cur != None:
-      if ((mll.search(BPairs, cur.value), mll.search(BPairs, (cur.value[1], cur.value[0], d))) == (None, None)):
-        mll.add(BPairs, cur.value)
-      cur = cur.nextNode
-  if BPairs.head == None or (BPairs.head != None and BPairs.head.value[2] > d):
-    BPairs.head = None
-    cur = bp.head
-    while cur != None:
-      mll.add(BPairs, cur.value)
-      cur = cur.nextNode
-  return BPairs
+def addToBoatPairs(BoatPairs, b1, b2, d):
+  if BoatPairs.head == None:
+    pq.enqueue_priority(BoatPairs, (b1[0], b2[0], d), - d) # -d para que sea un min-priority queue
+  else:
+    if d == BoatPairs.head.value[2] and ((mll.search(BoatPairs, (b1[0], b2[0], d)), mll.search(BoatPairs, (b2[0], b1[0], d))) == (None,None)): 
+      pq.enqueue_priority(BoatPairs, (b1[0], b2[0], d), - d)
+    if d < BoatPairs.head.value[2]:
+      BoatPairs.head = None
+      pq.enqueue_priority(BoatPairs, (b1[0], b2[0], d), - d)
+  return BoatPairs
 
 "Colission"
 "---------------------------------------------------------------------------------"
@@ -480,7 +461,7 @@ def colisiones(flota):
       if len(Temp)!=3:
         mll.add(Resultado,(Cur.value[0],Cur.value[1],Temp[1]))
       else:
-        mll.add(Resultado,(Cur.value[0],Cur.value[1],Temp[1],"el par de barcos estuvo en riesgo de colision todo el mes por viajar en paralelo"))
+        mll.add(Resultado,(Cur.value[0],Cur.value[1],Temp[1],"el par de barcos estuvo en riesgo de colision todo el mes por viajar en paralelo."))
     Cur=Cur.nextNode
 
   #Cur=Resultado.head
@@ -604,7 +585,7 @@ def Limites(Barco,date):
 #print(obtainMinDist(("B1",-1,0,"NE"),("B2",5,1,"NW"),"01/05/2022"))
 #print(Limites(("B1",-15,13,"NE"),"01/05/2022"))
 
-"MERGE SORT MODIFICAIONES"
+"MERGE SORT MODIFICACIONES"
 '---------------------------------------------------------------------------------'
 # Merge Sort Modificado para ordenar barcos según coordenada x o y 
 # L es un arreglo de tuplas (nombre, pos inicial en x, pos inicial en y, dirección) y coordinate puede ser 'x' o 'y'
