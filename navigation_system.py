@@ -67,14 +67,18 @@ def collision():
     flota = pickle.load(f)
   collisionList = aux.colisiones(flota)
   Cur=collisionList.head
-  while Cur!=None:
-    if len(Cur.value)==3:
-      print ("El día %s, los barcos %s y %s estuvieron en riesgo de colisión." %(Cur.value[2],Cur.value[0][0],Cur.value[1][0]))
-    else:
-      print ("Los barcos %s y %s viajaron en paralelo en riesgo de colision durante todo el mes." %(Cur.value[0][0],Cur.value[1][0]))
-    Cur=Cur.nextNode
-  print("")
-  return 
+  if Cur!=None:
+    while Cur!=None:
+      if len(Cur.value)==3:
+        print ("El día %s, los barcos %s y %s estuvieron en riesgo de colisión." %(Cur.value[2],Cur.value[0][0],Cur.value[1][0]))
+      else:
+        print ("Los barcos %s y %s viajaron en paralelo en riesgo de colisión durante todo el mes." %(Cur.value[0][0],Cur.value[1][0]))
+      Cur=Cur.nextNode
+    print("")
+    return 
+  else:
+    print("no hubo riesgo de colisión este mes")
+    return False
 
 "---------------------------------------------------------------------------------"
 #Devuelve un ranking (10) de las embarcaciones más cercanas entre sí.
