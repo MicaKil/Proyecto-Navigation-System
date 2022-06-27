@@ -9,6 +9,7 @@ desde mi desktop
 
 python navigation_system.py -create C:\Users\micae\Desktop\TXTFILES\flotaB.txt
 python navigation_system.py -create C:\Users\micae\Desktop\TXTFILES\flotaR.txt
+python navigation_system.py -create C:\Users\micae\Desktop\TXTFILES\flota_ejemplo.txt
 
 *search*
 ----------------------------------------------------------------------

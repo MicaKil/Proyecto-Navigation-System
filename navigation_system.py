@@ -74,10 +74,10 @@ def collision():
       else:
         print ("Los barcos %s y %s viajaron en paralelo en riesgo de colisión durante todo el mes." %(Cur.value[0][0],Cur.value[1][0]))
       Cur=Cur.nextNode
-    print("")
+      #print("") #Acá estaba el print
     return 
   else:
-    print("no hubo riesgo de colisión este mes")
+    print("No hubo riesgo de colisión este mes.")
     return False
 
 "---------------------------------------------------------------------------------"

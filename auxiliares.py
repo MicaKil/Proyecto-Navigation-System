@@ -221,14 +221,16 @@ def closestR(Bx, By, BoatPairs):
       BxE[k] = Bx[i]
       k += 1
     #separamos los barcos en dos arreglos segun su posicion respecto a mid_x
-    ByW = Array(lenBx, tuple()) #Barcos ordenados segun x al Oeste de mid_x
-    ByE = Array(lenBx, tuple()) #Barcos ordenados segun x al Este de mid_x
+    lenBy = len(By)
+    ByW = Array(lenBy, tuple()) #Barcos ordenados segun x al Oeste de mid_x
+    ByE = Array(lenBy, tuple()) #Barcos ordenados segun x al Este de mid_x
     iW = 0
     iE = 0
-    lenBy = len(By)
+    #print(lenBy, lenBx)
     for i in range(lenBy):
       if By[i][1] < mid_x:
         ByW[iW] = By[i]
+        #print(iW,i)
         iW += 1
       else:
         ByE[iE] = By[i]
@@ -723,11 +725,12 @@ def rankingR(Bx, By, rank):
       BxE[k] = Bx[i]
       k += 1
     #separamos los barcos en dos arreglos segun su posicion respecto a mid_x
-    ByW = Array(lenBx, tuple()) #Barcos ordenados segun x al Oeste de mid_x
-    ByE = Array(lenBx, tuple()) #Barcos ordenados segun x al Este de mid_x
+    lenBy = len(By)
+    ByW = Array(lenBy, tuple()) #Barcos ordenados segun x al Oeste de mid_x
+    ByE = Array(lenBy, tuple()) #Barcos ordenados segun x al Este de mid_x
     iW = 0
     iE = 0
-    lenBy = len(By)
+    
     for i in range(lenBy):
       if By[i][1] < mid_x:
         ByW[iW] = By[i]
@@ -906,6 +909,42 @@ def random_month():
   else:
     mes = str(mes)
   return "01/"+ mes + "/2022"
+
+def create_fleet():
+  result = []
+  directions = ['N', 'S', 'E', 'W', 'NE', 'NW', 'SE', 'SW']
+
+  # Random points.
+  for i in range(20):
+    point_r1 = (random.randrange(100), random.randrange(100), directions[random.randrange(len(directions) - 1)])
+    point_r2 = (random.randrange(100), random.randrange(100), directions[random.randrange(len(directions) - 1)])
+    result.append(point_r1)
+    result.append(point_r2)
+  #Lateral point. Estos barcos van a tener riesgo de colision el dia 10 y el 11.
+  for i in range(20):
+    point_left = (-10, i, 'E')
+    point_right = (10, i, 'W')
+    result.append(point_left)
+    result.append(point_right)
+  #Vertical point. Estos barcos van a tener riesgo de colision el dia 5.
+  for i in range(20):
+    point_down = (i+12, -5, 'N')
+    point_up = (i+12, 4, 'S')
+    result.append(point_down)
+    result.append(point_up)
+  #Diagonal point. Estos barcos van a tener riesgo de colision los primeros 20 dias pues van por la misma diagonal.
+  for i in range(20):
+    point_up = (i, i, 'SW')
+    point_down = (-i, -i, 'NE')
+    result.append(point_up)
+    result.append(point_down)
+  # Random points
+  for i in range(20):
+    point_r1 = (random.randrange(100), random.randrange(100), directions[random.randrange(len(directions) - 1)])
+    point_r2 = (random.randrange(100), random.randrange(100), directions[random.randrange(len(directions) - 1)])
+    result.append(point_r1)
+    result.append(point_r2)
+  return result
 
 "---------------------------------------------------------------------------------"
 "FUNCIONES PICKLE"
