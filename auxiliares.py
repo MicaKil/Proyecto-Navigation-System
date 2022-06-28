@@ -799,38 +799,17 @@ def addToRank(rank, b1, b2, delta):
   if rank.head == None:
     pq.enqueue_priority(rank, (b1[0], b2[0], d), d)
   else:
-    if d > delta:
+    if d > delta: #si la distancia calculada es mayor que la cota superior, no se agrega
       return rank
     # si el elemento no se encuentra en la cola...
     if (mll.search(rank, (b1[0], b2[0], d)), mll.search(rank, (b2[0], b1[0], d))) == (None,None):
-      if d == delta: # si la distancia es igual a delta 
-        pq.enqueue_priority(rank, (b1[0], b2[0], d), d)
+      l = mll.length(rank)
+      if l < 5 : # si la cola tiene menos de 5 elementos... 
+        pq.enqueue_priority(rank, (b1[0], b2[0], d), d) #se agrega el nuevo elemento 
       else:
-        l = mll.length(rank)
         if d < delta:
-          if l < 5 : # si la cola tiene menos de 5 elementos... 
-            pq.enqueue_priority(rank, (b1[0], b2[0], d), d) #se agrega el nuevo elemento 
-          else: # sino...
-            count = 0
-            cur = rank.head
-            old_delta = delta
-            # calcula que elementos debe eliminar
-            while cur != None and (l - count) >= 5:  
-              if cur.value[2] != old_delta:
-                old_delta = cur.value[2]
-              count += 1
-              cur = cur.nextNode
-            while cur != None and cur.value[2] == old_delta:
-              count += 1
-              cur = cur.nextNode
-            if l - count >= 4:
-              while count > 0:
-                pq.dequeue_priority(rank)
-                count -= 1
-            else:
-              while rank.head != None and rank.head.value[2] != old_delta:
-                pq.dequeue_priority(rank)
-            pq.enqueue_priority(rank, (b1[0], b2[0], d), d)
+          pq.dequeue_priority(rank) #desencolamos al elemento mayor
+          pq.enqueue_priority(rank, (b1[0], b2[0], d), d) #se agrega el nuevo elemento
   return rank
 
 # Operaciones con PriorityQueue tiene aproximadamente O(1) ya que van a haber 5 elementos aprox
