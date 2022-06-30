@@ -65,17 +65,16 @@ def closer(date):
 def collision(): 
   with open('tabla_flota.txt', 'rb') as f: #deserializacion
     flota = pickle.load(f)
-  collisionList = aux.colisiones(flota)
-  Cur=collisionList.head
-  if Cur!=None:
-    while Cur!=None:
-      if len(Cur.value)==3:
-        print ("El día %s, los barcos %s y %s estuvieron en riesgo de colisión." %(Cur.value[2],Cur.value[0][0],Cur.value[1][0]))
-      else:
-        print ("Los barcos %s y %s viajaron en paralelo en riesgo de colisión durante todo el mes." %(Cur.value[0][0],Cur.value[1][0]))
-      Cur=Cur.nextNode
-      #print("") #Acá estaba el print
-    return 
+  collisionArray = aux.colisiones(flota)
+  length=len(collisionArray)
+  if length>0:
+    for i in range(length):
+      if len(collisionArray[i])==3:
+        print ("El día %s, los barcos %s y %s estuvieron en riesgo de colisión." %(collisionArray[i][2],collisionArray[i][0][0],collisionArray[i][1][0]))
+    for i in range(length):
+      if len(collisionArray[i])!=3:
+        print ("Los barcos %s y %s viajaron en paralelo en riesgo de colisión durante todo el mes." %(collisionArray[i][0][0],collisionArray[i][1][0]))
+    return
   else:
     print("No hubo riesgo de colisión este mes.")
     return False
