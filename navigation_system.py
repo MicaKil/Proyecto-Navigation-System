@@ -55,8 +55,10 @@ def closer(date):
   closestPair = aux.closest(flota, day)
   print ("La distancia mínima el día %s es %f entre los barcos:" %(day, closestPair[0]))
   cur = closestPair[1].head
+  i = 1
   while cur != None:
-    print("%s y %s" %(cur.value[0], cur.value[1]))
+    print("%d. %s y %s" %(i, cur.value[0], cur.value[1]))
+    i += 1
     cur = cur.nextNode
   return 
 
