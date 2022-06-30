@@ -193,9 +193,9 @@ def closest(flota, day):
   for i in range(m):
     if flota[i] != None:
       boat = flota[i][1]
-      b_pos = getPos(day,boat) #calculamos la posición del barco en day
-      Bx[k] = (boat[0],b_pos[0],b_pos[1],boat[3])
-      By[k] = (boat[0],b_pos[0],b_pos[1],boat[3])
+      (x, y) = getPos(day,boat) #calculamos la posición del barco en day
+      Bx[k] = (boat[0], x ,y, boat[3])
+      By[k] = (boat[0], x, y, boat[3])
       k += 1
   # ordenamos los barcos segun x y segun y (ascendente)
   mergesortMOD(Bx,'x')
