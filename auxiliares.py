@@ -226,11 +226,10 @@ def closestR(Bx, By, BoatPairs):
     ByE = Array(lenBy, tuple()) #Barcos ordenados segun x al Este de mid_x
     iW = 0
     iE = 0
-    #print(lenBy, lenBx)
+
     for i in range(lenBy):
       if By[i][1] < mid_x:
         ByW[iW] = By[i]
-        #print(iW,i)
         iW += 1
       else:
         ByE[iE] = By[i]
@@ -693,38 +692,17 @@ def addToRank(rank, b1, b2, delta):
   if rank.head == None:
     pq.enqueue_priority(rank, (b1[0], b2[0], d), d)
   else:
-    if d > delta:
+    if d > delta: #si la distancia calculada es mayor que la cota superior, no se agrega
       return rank
     # si el elemento no se encuentra en la cola...
     if (mll.search(rank, (b1[0], b2[0], d)), mll.search(rank, (b2[0], b1[0], d))) == (None,None):
-      if d == delta: # si la distancia es igual a delta 
-        pq.enqueue_priority(rank, (b1[0], b2[0], d), d)
+      l = mll.length(rank)
+      if l < 5 : # si la cola tiene menos de 5 elementos... 
+        pq.enqueue_priority(rank, (b1[0], b2[0], d), d) #se agrega el nuevo elemento 
       else:
-        l = mll.length(rank)
         if d < delta:
-          if l < 5 : # si la cola tiene menos de 5 elementos... 
-            pq.enqueue_priority(rank, (b1[0], b2[0], d), d) #se agrega el nuevo elemento 
-          else: # sino...
-            count = 0
-            cur = rank.head
-            old_delta = delta
-            # calcula que elementos debe eliminar
-            while cur != None and (l - count) >= 5:  
-              if cur.value[2] != old_delta:
-                old_delta = cur.value[2]
-              count += 1
-              cur = cur.nextNode
-            while cur != None and cur.value[2] == old_delta:
-              count += 1
-              cur = cur.nextNode
-            if l - count >= 4:
-              while count > 0:
-                pq.dequeue_priority(rank)
-                count -= 1
-            else:
-              while rank.head != None and rank.head.value[2] != old_delta:
-                pq.dequeue_priority(rank)
-            pq.enqueue_priority(rank, (b1[0], b2[0], d), d)
+          pq.dequeue_priority(rank) #desencolamos al elemento mayor
+          pq.enqueue_priority(rank, (b1[0], b2[0], d), d) #se agrega el nuevo elemento
   return rank
 
 # Operaciones con PriorityQueue tiene aproximadamente O(1) ya que van a haber 5 elementos aprox
@@ -760,94 +738,3 @@ def dist(A, B):
 # Dados dos barcos b1 y b2, junto a su relacion de movimiento y el dia en el mes. calcula su distancia
 def CalcDist(b1,b2,K,T):
   return(math.sqrt(pow(b2[1]-b1[1]+K[0]*T,2)+pow(b2[2]-b1[2]+K[1]*T,2)))
-
-"================================================================================="
-"EXTRAS" 
-
-# las funciones create_flotatxt y random_month no están en pseudo-python porque no va a ser usadas en el programa ppal
-# su unico propósito es generar un txt para testeo 
-def create_flotatxt(n):
-  direccion = ["N","S","E","W","NE","NW","SE","SW"]
-
-  flota_m = []
-  flota_m.append(random_month())
-
-  num_flota = []
-  coor_flota = []
-
-  for i in range(1,n + 1): #en 0 está la fecha
-    #se guardan los nombres y coordenadas en "uso"
-    #no hay do - while en python y ni ganas de buscar alternativa inteligente
-    num = random.randrange(0,n+1)
-    while num in num_flota: #para no tener barcos con el mismo nombre
-      num = random.randrange(0,n+1)
-    num_flota.append(num)
-
-    coor = (random.randrange(-n,n),random.randrange(-n,n))
-    while coor in  coor_flota: #o misma coordena 
-      coor = (random.randrange(-n,n),random.randrange(-n,n))
-    coor_flota.append(coor)
-
-    flota_m.append("b"+str(num)+" "+str(coor[0])+" "+str(coor[1])+" "+direccion[random.randrange(8)])
-
-  with open('flota.txt', 'w') as f: #si no exite el archivo flota lo crea
-    f.write('\n'.join(flota_m))
-
-#---------------------------------------------------------------------------------
-# genera un mes random para la lista de los barcos
-def random_month():
-  mes = random.randint(1,12)
-  if mes < 10:
-    mes = str(mes)
-    mes = "0" + mes 
-  else:
-    mes = str(mes)
-  return "01/"+ mes + "/2022"
-
-def create_fleet():
-  result = []
-  directions = ['N', 'S', 'E', 'W', 'NE', 'NW', 'SE', 'SW']
-
-  # Random points.
-  for i in range(20):
-    point_r1 = (random.randrange(100), random.randrange(100), directions[random.randrange(len(directions) - 1)])
-    point_r2 = (random.randrange(100), random.randrange(100), directions[random.randrange(len(directions) - 1)])
-    result.append(point_r1)
-    result.append(point_r2)
-  #Lateral point. Estos barcos van a tener riesgo de colision el dia 10 y el 11.
-  for i in range(20):
-    point_left = (-10, i, 'E')
-    point_right = (10, i, 'W')
-    result.append(point_left)
-    result.append(point_right)
-  #Vertical point. Estos barcos van a tener riesgo de colision el dia 5.
-  for i in range(20):
-    point_down = (i+12, -5, 'N')
-    point_up = (i+12, 4, 'S')
-    result.append(point_down)
-    result.append(point_up)
-  #Diagonal point. Estos barcos van a tener riesgo de colision los primeros 20 dias pues van por la misma diagonal.
-  for i in range(20):
-    point_up = (i, i, 'SW')
-    point_down = (-i, -i, 'NE')
-    result.append(point_up)
-    result.append(point_down)
-  # Random points
-  for i in range(20):
-    point_r1 = (random.randrange(100), random.randrange(100), directions[random.randrange(len(directions) - 1)])
-    point_r2 = (random.randrange(100), random.randrange(100), directions[random.randrange(len(directions) - 1)])
-    result.append(point_r1)
-    result.append(point_r2)
-  return result
-
-"---------------------------------------------------------------------------------"
-"FUNCIONES PICKLE"
-
-#copie y pegué para poder acceder a estas luego en caso de ser necesario
-
-# with open('tabla_flota.txt', 'wb') as f: #lo serializamos
-#   pickle.dump(flota,f)
-
-# with open('tabla_flota.txt', 'rb') as f: #deserializacion
-#   flota = pickle.load(f)
-
